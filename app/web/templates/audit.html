@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block titolo %}Registro accessi · Emersione{% endblock %}
+{% block contenuto %}
+<h2>Registro degli eventi di audit</h2>
+<p class="k">Il registro locale documenta gli eventi principali. La catena hash aiuta a rilevare modifiche ai record collegati, ma non rende il file immutabile e non rileva con certezza la rimozione della coda senza un ancoraggio esterno. Per uso istituzionale è necessario un audit centralizzato con accessi separati, retention e controlli indipendenti.</p>
+<div class="card" role="status">
+  <h3>Verifica della catena hash</h3>
+  {% if integrita.valida %}<p class="notice">Nessuna incongruenza rilevata nei {{ integrita.eventi_verificati }} eventi hashati.</p>{% else %}<p class="error">Incongruenze rilevate nella catena. Non considerare il registro integro finché non è stato verificato.</p>{% endif %}
+  <p class="k">Eventi hashati verificati: {{ integrita.eventi_verificati }} · Eventi legacy/non hashati: {{ integrita.eventi_legacy }}</p>
+  {% if integrita.errori %}<ul>{% for errore in integrita.errori %}<li>Riga {{ errore.riga }}: {{ errore.motivo }}</li>{% endfor %}</ul>{% endif %}
+  <p class="k">{{ integrita.nota }}</p>
+  <p class="k">Ultimo hash della catena: <code>{{ integrita.ultimo_hash or "—" }}</code>. Per rilevare la rimozione della coda, conservare periodicamente fuori dal sistema il punto di ancoraggio (<code>python -m app.audit_cli ancora</code>) e verificarlo con <code>verifica-ancora</code>. Rotazione e conservazione: vedere docs/E_SICUREZZA_PRIVACY.md.</p>
+  {% if puo.esporta_audit %}<p><a href="/audit/esporta.csv">Esporta il registro in CSV</a> (l'esportazione è a sua volta registrata)</p>{% endif %}
+</div>
+<div class="table-scroll"><table><thead><tr><th scope="col">Data/ora UTC</th><th scope="col">Utente</th><th scope="col">Ruolo</th><th scope="col">Azione</th><th scope="col">Esito</th><th scope="col">Dettaglio</th><th scope="col">Correlazione</th></tr></thead><tbody>
+{% for v in voci %}<tr><td>{{ v.quando }}</td><td>{{ v.utente }}</td><td>{{ v.ruolo or "N/D" }}</td><td>{{ v.azione }}</td><td>{{ v.esito or "N/D" }}</td><td>{{ v.dettaglio }}{% if v.stato %}<br><span class="k">{{ v.stato }}</span>{% endif %}{% if v.motivo %}<br><span class="k">{{ v.motivo }}</span>{% endif %}</td><td><code>{{ v.request_id or "" }}</code></td></tr>{% endfor %}
+</tbody></table></div>
+{% if not voci %}<p class="k">Nessun evento registrato.</p>{% endif %}
+{% endblock %}

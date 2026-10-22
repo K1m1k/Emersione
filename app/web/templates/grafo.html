@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block titolo %}Grafo aziendale · Emersione{% endblock %}
+{% block contenuto %}
+<h2>Grafo documentale delle relazioni tra aziende</h2>
+<p class="k">Gli archi rappresentano relazioni segnalate con evidenza e fonte, ancora soggette a verifica. Il grafo non attribuisce colpe e non inferisce illeciti da una relazione societaria o commerciale.</p>
+{% if esito %}<p class="notice" role="status">{{ esito }}</p>{% endif %}
+<div class="card"><h3>Filtri e fonti strutturate</h3>
+<form method="get" action="/grafo" class="filtri"><label for="alla_data">Situazione valida alla data (AAAA-MM-GG)</label><input id="alla_data" name="alla_data" value="{{ alla_data }}" pattern="\d{4}-\d{2}-\d{2}"><button type="submit">Applica</button></form>
+{% if acquisizioni %}<form method="get" action="/grafo/ocds" class="filtri"><label for="fetch_id">Candidati da dati OCDS acquisiti (es. ANAC)</label><select id="fetch_id" name="fetch_id">{% for a in acquisizioni %}<option value="{{ a.id }}">{{ a.chiave }} — {{ a.acquisito_il }}</option>{% endfor %}</select><button type="submit">Analizza</button></form>{% endif %}
+<p class="k">Le relazioni marcate "riservata" sono visibili solo ai ruoli autorizzati.</p></div>
+<div class="card"><h3>Visualizzazione</h3><p class="k">Sono visualizzate le relazioni registrate le cui aziende appartengono al lotto corrente. Per leggibilità il disegno mostra al massimo 30 nodi e 80 archi; la tabella sotto conserva il registro completo.</p><div class="table-scroll">{{ svg_grafo|safe }}</div></div>
+<div class="card">
+<h3>Corrispondenze strutturate da verificare ({{ suggerimenti|length }})</h3>
+<p class="k">Le corrispondenze vengono proposte solo su identificativi strutturati esatti importati nel lotto: gruppo societario, contratto pubblico, subappalto e codice sede. Non sono ancora relazioni confermate, non vengono salvate automaticamente e non incidono sul punteggio. Prima di registrare un arco nel grafo, occorre verificare la fonte primaria e la semantica del dato.</p>
+{% if suggerimenti %}<div class="table-scroll"><table><thead><tr><th>Origine</th><th>Campo</th><th>Valore uguale</th><th>Destinazione</th><th>Nota</th></tr></thead><tbody>
+{% for s in suggerimenti %}<tr><td>{{ s.origine_nome }}<br><code>{{ s.origine_id }}</code></td><td>{{ s.tipo_label }}<br><code>{{ s.campo }}</code></td><td><code>{{ s.valore_condiviso }}</code></td><td>{{ s.destinazione_nome }}<br><code>{{ s.destinazione_id }}</code></td><td>{{ s.nota }}</td></tr>{% endfor %}
+</tbody></table></div>{% else %}<p class="k">Nessuna corrispondenza rilevata nei campi strutturati del lotto corrente.</p>{% endif %}
+</div>
+{% if puo.grafo_aggiungi %}
+<div class="card">
+<h3>Registra relazione documentata</h3>
+{% if aziende|length < 2 %}<p class="k">Servono almeno due aziende nel lotto attivo.</p>{% else %}
+<form method="post" action="/grafo/aggiungi">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<label for="origine_id">Azienda origine</label><select id="origine_id" name="origine_id" required><option value="">Seleziona</option>{% for a in aziende %}<option value="{{ a.id }}">{{ a.ragione_sociale or a.id }} — {{ a.id }}</option>{% endfor %}</select>
+<label for="destinazione_id">Azienda collegata</label><select id="destinazione_id" name="destinazione_id" required><option value="">Seleziona</option>{% for a in aziende %}<option value="{{ a.id }}">{{ a.ragione_sociale or a.id }} — {{ a.id }}</option>{% endfor %}</select>
+<label for="tipo">Tipo di relazione</label><select id="tipo" name="tipo" required>{% for k, v in tipi_relazione %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select>
+<label for="evidenza">Descrizione precisa dell'evidenza (20–3000 caratteri)</label><textarea id="evidenza" name="evidenza" minlength="20" maxlength="3000" rows="4" required></textarea>
+<label for="url_fonte">URL della fonte HTTPS (in alternativa al documento registrato)</label><input id="url_fonte" name="url_fonte" type="url" maxlength="1000" placeholder="https://...">
+<label for="riferimento_documento">ID di un documento già registrato (opzionale se è presente l'URL)</label><input id="riferimento_documento" name="riferimento_documento" maxlength="32" placeholder="ID documento registrato">
+<label for="valido_dal">Valida dal (AAAA-MM-GG, facoltativo)</label><input id="valido_dal" name="valido_dal" pattern="\d{4}-\d{2}-\d{2}" maxlength="10">
+<label for="valido_al">Valida fino al (AAAA-MM-GG, facoltativo)</label><input id="valido_al" name="valido_al" pattern="\d{4}-\d{2}-\d{2}" maxlength="10">
+<label for="riservatezza">Riservatezza della fonte</label><select id="riservatezza" name="riservatezza"><option value="pubblica">Pubblica</option><option value="riservata">Riservata (visibile solo ai ruoli autorizzati)</option></select>
+<p class="k">Hash lotto corrente: <code>{{ dataset_hash or "non disponibile" }}</code>. La relazione sarà marcata “da verificare”.</p>
+<button type="submit">Registra relazione</button>
+</form>
+{% endif %}</div>
+{% endif %}
+<div class="card">
+<h3>Registro relazioni ({{ relazioni|length }})</h3>
+<div class="table-scroll"><table><thead><tr><th>Azienda origine</th><th>Relazione</th><th>Azienda collegata</th><th>Evidenza / fonte</th><th>Stato</th><th>Provenienza</th><th>Validità</th>{% if puo.grafo_revisiona %}<th>Revisione</th>{% endif %}</tr></thead><tbody>
+{% for r in relazioni %}<tr><td>{{ r.origine_nome }}<br><code>{{ r.origine_id }}</code></td><td>{{ r.tipo_label }}</td><td>{{ r.destinazione_nome }}<br><code>{{ r.destinazione_id }}</code></td><td>{{ r.evidenza }}{% if r.url_fonte %}<br><a href="{{ r.url_fonte }}" rel="noreferrer">Fonte</a>{% endif %}{% if r.riferimento_documento %}<br>Documento: {{ r.riferimento_documento }}{% endif %}<br><span class="k">Hash evidenza: <code>{{ r.hash_evidenza }}</code></span></td><td>{{ r.stato }}{% if r.nota_revisore %}<br>{{ r.nota_revisore }}{% endif %}</td><td>{{ r.creato_da }}<br>{{ r.creato_il }}<br><span class="k">Hash lotto: {{ r.dataset_hash }}</span></td><td>{{ r.valido_dal or "—" }} → {{ r.valido_al or "in corso" }}<br><span class="k">{{ r.riservatezza }}</span></td>
+{% if puo.grafo_revisiona %}<td><form method="post" action="/grafo/revisiona"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="id" value="{{ r.id }}"><label for="stato-r-{{ r.id }}">Stato</label><select id="stato-r-{{ r.id }}" name="stato"><option value="da_verificare">Da verificare</option><option value="confermata_documentalmente">Confermata documentalmente</option><option value="non_pertinente">Non pertinente</option><option value="contestata">Contestata</option></select><label for="nota-r-{{ r.id }}">Nota revisore</label><textarea id="nota-r-{{ r.id }}" name="nota" rows="2" minlength="10" maxlength="1500" required></textarea><button type="submit">Salva</button></form></td>{% endif %}</tr>{% endfor %}
+</tbody></table></div>
+{% if not relazioni %}<p class="k">Nessuna relazione aziendale registrata. Non vengono create relazioni automatiche basate soltanto su omonimie o dati deboli.</p>{% endif %}
+</div>
+{% endblock %}

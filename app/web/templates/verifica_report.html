@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block titolo %}Verifica relazione · Emersione{% endblock %}
+{% block contenuto %}
+<div class="card">
+  <h2>Verifica d'integrità di una relazione PDF</h2>
+  <p class="k">Calcola l'impronta SHA-256 del file (ad esempio con <code>sha256sum relazione.pdf</code> su Linux o <code>certutil -hashfile relazione.pdf SHA256</code> su Windows) e incollala qui. La verifica indica solo se il file è identico a uno generato da questa istanza: non gli attribuisce valore giuridico.</p>
+  <form method="get" action="/report/verifica">
+    <label for="sha256">Impronta SHA-256</label><input id="sha256" name="sha256" value="{{ impronta }}" pattern="[0-9a-fA-F]{64}" maxlength="64" required>
+    <button type="submit">Verifica</button>
+  </form>
+  {% if errore %}<p class="error" role="alert">{{ errore }}</p>{% endif %}
+  {% if impronta and not errore %}
+    {% if risultato %}<p class="ok" role="status"><b>Corrispondenza trovata.</b> Relazione {{ risultato.id }} generata il {{ risultato.generato_il }} da {{ risultato.utente }} ({{ risultato.ruolo }}) per l'azienda {{ risultato.azienda_id }}{% if risultato.pratica_id %}, pratica {{ risultato.pratica_id }}{% endif %}, esecuzione {{ risultato.esecuzione_id }}.</p>
+    {% else %}<p class="ko" role="status"><b>Nessuna corrispondenza.</b> Il file è stato modificato dopo la generazione oppure non proviene da questa istanza.</p>{% endif %}
+  {% endif %}
+</div>
+{% endblock %}

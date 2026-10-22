@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block titolo %}Osservazioni normalizzate · Emersione{% endblock %}
+{% block contenuto %}
+<h2>Osservazioni di riferimento normalizzate</h2>
+<p><a href="/fonti">← Torna a fonti e acquisizioni</a></p>
+<div class="card">
+  <p><b>Fonte:</b> {{ mapping.chiave_fonte }}</p>
+  <p><b>Settore / parametro:</b> {{ mapping.settore_id }} / {{ mapping.parametro_id }}</p>
+  <p><b>Record normalizzati:</b> {{ mapping.numero_righe }}</p>
+  <p><b>Data:</b> {{ mapping.creato_il }} · <b>Operatore:</b> {{ mapping.creato_da }}</p>
+  <p><b>Stato del mapping:</b> <span class="badge {{ 'basso' if mapping.stato == 'mapping_verificato' else 'non_valutabile' }}">{{ mapping.stato }}</span></p>
+  <p><b>Hash fonte:</b> <code>{{ mapping.hash_fonte }}</code></p>
+  <p><a href="{{ mapping.url_fonte }}" rel="noreferrer">Apri la fonte originale</a> · <a href="/fonti/{{ mapping.acquisizione_id }}/scarica">Scarica payload archiviato</a></p>
+  <p class="k">La revisione verifica il mapping delle colonne e l'associazione dichiarata. Non prova la correttezza sostanziale del dataset, la sua applicabilità normativa o l'approvazione del parametro. Le osservazioni non sono attualmente utilizzate automaticamente nel punteggio.</p>
+  {% if mapping.nota_revisore %}<p><b>Nota revisore:</b> {{ mapping.nota_revisore }} · {{ mapping.revisionato_da }} · {{ mapping.revisionato_il }}</p>{% endif %}
+</div>
+<div class="card">
+  <h3>Osservazioni normalizzate (massimo {{ righe|length }} visualizzate)</h3>
+  <div class="table-scroll"><table><thead><tr><th>Riga fonte</th><th>Periodo</th><th>Territorio</th><th>Categoria</th><th>Valore</th><th>Unità</th><th>Altre dimensioni</th><th>Stato</th></tr></thead><tbody>
+  {% for r in righe %}<tr><td>{{ r.riga_origine }}</td><td>{{ r.periodo or 'N/D' }}</td><td>{{ r.territorio or 'N/D' }}</td><td>{{ r.categoria or 'N/D' }}</td><td>{{ r.valore }}</td><td>{{ r.unita }}</td><td><code>{{ r.dimensioni|tojson }}</code></td><td>{{ r.stato }}</td></tr>{% endfor %}
+  </tbody></table></div>
+  <p class="k">Per limitare il consumo di memoria l'interfaccia mostra al massimo 200 osservazioni; tutte le righe restano nell'archivio di riferimento.</p>
+</div>
+{% if puo.revisiona_mappature %}
+<div class="card">
+  <h3>Revisione del mapping</h3>
+  <form method="post" action="/fonti/mappatura/revisiona">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="mapping_id" value="{{ mapping.id }}">
+    <label for="stato">Esito</label><select id="stato" name="stato"><option value="da_verificare">Da verificare</option><option value="mapping_verificato">Mapping verificato (solo struttura/colonne)</option><option value="non_pertinente">Non pertinente</option></select>
+    <label for="nota">Nota di revisione (15–1500 caratteri)</label><textarea id="nota" name="nota" minlength="15" maxlength="1500" rows="4" required></textarea>
+    <button type="submit">Registra revisione</button>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

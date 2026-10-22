@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block titolo %}Gestione settore {{ sid }} · Emersione{% endblock %}
+{% block contenuto %}
+<p><a href="/settori">&larr; Registro dei settori</a></p>
+<div class="card">
+  <h2>{{ settore.nome }} <code>{{ sid }}</code></h2>
+  {% if esito %}<p class="notice" role="status">{{ esito }}</p>{% endif %}
+  <p><b>Stato:</b> <span class="stato-chip">{{ settore.stato|replace("_"," ") }}</span> — {{ descrizione_stati.get(settore.stato, "") }}</p>
+  {% if settore.motivo_revisione %}<p class="k">Motivo della revisione: {{ settore.motivo_revisione }}</p>{% endif %}
+  <p class="k">Versione configurazione {{ settore.versione_configurazione or 1 }} · impronta corrente <code>{{ hash_attuale[:16] }}…</code>
+  {% if settore.creato_da %} · creato da {{ settore.creato_da }}{% endif %}{% if settore.aggiornato_da %} · ultima modifica di {{ settore.aggiornato_da }}{% endif %}</p>
+  {% if settore.nota_metodologica %}<p class="notice">{{ settore.nota_metodologica }}</p>{% endif %}
+</div>
+
+<div class="card">
+  <h2>Collaudo automatico</h2>
+  <p class="k">Il collaudo prova la configurazione in ambiente isolato su casi normali, limite, incompleti ed errati, verifica unità di misura, riproducibilità, tracciabilità e che gli altri settori non cambino. Superarlo non è una validazione scientifica o giuridica.</p>
+  {% if collaudo %}
+    <p><b>Ultimo collaudo:</b> {{ collaudo.eseguito_il }} da {{ collaudo.utente }} —
+      {% if collaudo.superato %}<span class="ok">SUPERATO</span>{% else %}<span class="ko">NON SUPERATO</span>{% endif %}
+      su {{ collaudo.casi_eseguiti }} casi.
+      {% if collaudo.hash_settore != hash_attuale %}<span class="ko">La configurazione è cambiata dopo questo collaudo: va ripetuto.</span>{% endif %}</p>
+    <div class="table-scroll"><table><tr><th scope="col">Controllo</th><th scope="col">Esito</th><th scope="col">Dettaglio</th></tr>
+    {% for c in collaudo.controlli %}<tr><td>{{ c.controllo|replace("_"," ") }}</td><td class="{{ 'ok' if c.esito == 'superato' else 'ko' if c.esito == 'fallito' else '' }}">{{ c.esito }}</td><td>{{ c.dettaglio }}</td></tr>{% endfor %}</table></div>
+  {% else %}<p>Collaudo non ancora eseguito.</p>{% endif %}
+  {% if puo.settori_collaudo %}
+  <form method="post" action="/settori/{{ sid }}/collaudo"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit">Esegui collaudo</button></form>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Passaggi di stato disponibili</h2>
+  {% if transizioni %}
+  {% for t in transizioni %}
+    <details class="subcard"><summary><b>→ {{ t.a_stato|replace("_"," ") }}</b> — {{ t.descrizione }}
+      {% if t.requisiti_mancanti %} <span class="ko">(requisiti mancanti)</span>{% endif %}</summary>
+      {% if t.requisiti_mancanti %}<p><b>Cosa manca:</b></p><ul>{% for m in t.requisiti_mancanti %}<li>{{ m }}</li>{% endfor %}</ul>{% endif %}
+      {% if puo.settori_transizione %}
+      <form method="post" action="/settori/{{ sid }}/transizione">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="a_stato" value="{{ t.a_stato }}">
+        <label for="mot_{{ t.a_stato }}">Motivazione (obbligatoria; almeno 20 caratteri per le approvazioni)</label>
+        <textarea id="mot_{{ t.a_stato }}" name="motivazione" maxlength="2000" rows="3" required></textarea>
+        {% if t.a_stato == "approvato" %}
+        <label for="ev_{{ t.a_stato }}">Documento di evidenza della validazione</label>
+        <select id="ev_{{ t.a_stato }}" name="evidenza"><option value="">— scegli —</option>{% for d in documenti %}<option value="{{ d.id }}">{{ d.titolo }}</option>{% endfor %}</select>
+        {% endif %}
+        <button type="submit">Esegui il passaggio</button>
+      </form>
+      {% endif %}
+    </details>
+  {% endfor %}
+  {% else %}<p class="k">Nessun passaggio previsto dallo stato corrente.</p>{% endif %}
+  <h3>Storico dei passaggi</h3>
+  {% if storico_transizioni %}<div class="table-scroll"><table><tr><th scope="col">Data</th><th scope="col">Da</th><th scope="col">A</th><th scope="col">Utente (ruolo)</th><th scope="col">Motivazione</th><th scope="col">Collaudo</th></tr>
+  {% for t in storico_transizioni %}<tr><td>{{ t.registrata_il }}</td><td>{{ t.da_stato }}</td><td>{{ t.a_stato }}</td><td>{{ t.utente }} ({{ t.ruolo }})</td><td>{{ t.motivazione }}</td><td>{{ t.collaudo_id or "—" }}</td></tr>{% endfor %}</table></div>
+  {% else %}<p class="k">Nessun passaggio registrato.</p>{% endif %}
+</div>
+
+<div class="card">
+  <h2>Impatto e dipendenze</h2>
+  <p><b>Parametri usati:</b> {% for p in impatto.parametri_usati %}<a href="/dipendenze?tipo=parametro&amp;id={{ p }}"><code>{{ p }}</code></a>{% if not loop.last %}, {% endif %}{% endfor %}</p>
+  <p><b>Condivisi con altri settori:</b> {{ impatto.parametri_condivisi_con_altri_settori|join(", ") or "nessuno" }}</p>
+  <p><b>Moduli:</b> {{ impatto.moduli|join(", ") or "nessuno" }} · <b>Esecuzioni storiche:</b> {{ impatto.esecuzioni_storiche|length }} · <b>Pratiche collegate:</b> {{ impatto.pratiche_collegate }}</p>
+  <p class="k">{{ impatto.approvazioni_richieste|join(" ") }}</p>
+</div>
+
+<div class="card">
+  <h2>Versioni della configurazione</h2>
+  <p class="k">Lo storico è completo e non viene mai cancellato. Il ripristino crea una nuova versione e riporta il settore in revisione.</p>
+  {% if versioni %}
+  <form method="get" action="/settori/{{ sid }}/gestione" class="filtri">
+    <label for="va">Versione A</label><select id="va" name="a">{% for v in versioni %}<option value="{{ v.progressivo }}">n. {{ v.progressivo }} — {{ v.registrata_il }} — {{ v.stato }}</option>{% endfor %}</select>
+    <label for="vb">Versione B</label><select id="vb" name="b">{% for v in versioni %}<option value="{{ v.progressivo }}">n. {{ v.progressivo }} — {{ v.registrata_il }} — {{ v.stato }}</option>{% endfor %}</select>
+    <button type="submit">Confronta</button>
+  </form>
+  {% if differenze is not none %}
+    {% if differenze %}<div class="table-scroll"><table><tr><th scope="col">Elemento</th><th scope="col">Prima (A)</th><th scope="col">Dopo (B)</th></tr>
+    {% for d in differenze %}<tr><td><code>{{ d.percorso }}</code></td><td><code>{{ d.prima }}</code></td><td><code>{{ d.dopo }}</code></td></tr>{% endfor %}</table></div>
+    {% else %}<p>Nessuna differenza tra le due versioni.</p>{% endif %}
+  {% endif %}
+  <div class="table-scroll"><table><tr><th scope="col">N.</th><th scope="col">Data</th><th scope="col">Autore</th><th scope="col">Motivo</th><th scope="col">Stato</th><th scope="col">Impronta</th></tr>
+  {% for v in versioni %}<tr><td>{{ v.progressivo }}</td><td>{{ v.registrata_il }}</td><td>{{ v.autore }}</td><td>{{ v.motivo }}</td><td>{{ v.stato }}</td><td><code>{{ v.hash_settore[:12] }}</code></td></tr>{% endfor %}</table></div>
+  {% if puo.settori_ripristino %}
+  <details class="subcard"><summary>Ripristina una versione precedente</summary>
+    <form method="post" action="/settori/{{ sid }}/ripristina">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <label for="prog">Versione</label><select id="prog" name="progressivo">{% for v in versioni %}<option value="{{ v.progressivo }}">n. {{ v.progressivo }} — {{ v.registrata_il }}</option>{% endfor %}</select>
+      <label for="motr">Motivazione</label><textarea id="motr" name="motivazione" rows="2" maxlength="500" required></textarea>
+      <button type="submit">Ripristina come nuova versione</button>
+    </form></details>
+  {% endif %}
+  {% else %}<p class="k">Nessuna versione registrata: lo storico inizia al primo salvataggio del registro.</p>{% endif %}
+</div>
+{% endblock %}

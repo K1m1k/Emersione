@@ -1,0 +1,767 @@
+{
+  "versione": 1,
+  "parametri": {
+    "ore_annue_addetto": {
+      "nome": "Ore annue di lavoro per addetto equivalente a tempo pieno",
+      "valore": 1600,
+      "unita": "ore/anno",
+      "fonte": "FONTE DA VERIFICARE",
+      "stato": "da_verificare",
+      "tipo": "coefficiente",
+      "ambito": "trasversale",
+      "descrizione": "Parametro provvisorio; richiede una fonte e una verifica di applicabilità.",
+      "dimensione": {
+        "ora": 1,
+        "addetto": -1,
+        "anno": -1
+      },
+      "natura": "ipotesi_sperimentale",
+      "riferimento_fonte": {
+        "titolo_documento": "",
+        "url": "",
+        "riferimento": "",
+        "data_pubblicazione": "",
+        "data_accesso": "",
+        "periodo_validita": "",
+        "territorio": "",
+        "condizioni_uso": "",
+        "responsabile_verifica": ""
+      }
+    },
+    "agri_ore_ha_pomodoro": {
+      "nome": "Ore per ettaro di pomodoro",
+      "valore": 450,
+      "unita": "ore/(ha·anno)",
+      "fonte": "FONTE DA VERIFICARE",
+      "stato": "da_verificare",
+      "tipo": "coefficiente",
+      "ambito": "agricoltura",
+      "descrizione": "Valore segnaposto da sostituire con fonte verificata.",
+      "dimensione": {
+        "ora": 1,
+        "ettaro": -1,
+        "anno": -1
+      },
+      "natura": "ipotesi_sperimentale",
+      "riferimento_fonte": {
+        "titolo_documento": "",
+        "url": "",
+        "riferimento": "",
+        "data_pubblicazione": "",
+        "data_accesso": "",
+        "periodo_validita": "",
+        "territorio": "",
+        "condizioni_uso": "",
+        "responsabile_verifica": ""
+      }
+    },
+    "agri_ore_ha_uva": {
+      "nome": "Ore per ettaro di uva",
+      "valore": 700,
+      "unita": "ore/(ha·anno)",
+      "fonte": "FONTE DA VERIFICARE",
+      "stato": "da_verificare",
+      "tipo": "coefficiente",
+      "ambito": "agricoltura",
+      "descrizione": "Valore segnaposto da sostituire con fonte verificata.",
+      "dimensione": {
+        "ora": 1,
+        "ettaro": -1,
+        "anno": -1
+      },
+      "natura": "ipotesi_sperimentale",
+      "riferimento_fonte": {
+        "titolo_documento": "",
+        "url": "",
+        "riferimento": "",
+        "data_pubblicazione": "",
+        "data_accesso": "",
+        "periodo_validita": "",
+        "territorio": "",
+        "condizioni_uso": "",
+        "responsabile_verifica": ""
+      }
+    },
+    "agri_ore_ha_olivo": {
+      "nome": "Ore per ettaro di olivo",
+      "valore": 250,
+      "unita": "ore/(ha·anno)",
+      "fonte": "FONTE DA VERIFICARE",
+      "stato": "da_verificare",
+      "tipo": "coefficiente",
+      "ambito": "agricoltura",
+      "descrizione": "Valore segnaposto da sostituire con fonte verificata.",
+      "dimensione": {
+        "ora": 1,
+        "ettaro": -1,
+        "anno": -1
+      },
+      "natura": "ipotesi_sperimentale",
+      "riferimento_fonte": {
+        "titolo_documento": "",
+        "url": "",
+        "riferimento": "",
+        "data_pubblicazione": "",
+        "data_accesso": "",
+        "periodo_validita": "",
+        "territorio": "",
+        "condizioni_uso": "",
+        "responsabile_verifica": ""
+      }
+    },
+    "agri_ore_ha_ortaggi": {
+      "nome": "Ore per ettaro di ortaggi",
+      "valore": 500,
+      "unita": "ore/(ha·anno)",
+      "fonte": "FONTE DA VERIFICARE",
+      "stato": "da_verificare",
+      "tipo": "coefficiente",
+      "ambito": "agricoltura",
+      "descrizione": "Valore segnaposto da sostituire con fonte verificata.",
+      "dimensione": {
+        "ora": 1,
+        "ettaro": -1,
+        "anno": -1
+      },
+      "natura": "ipotesi_sperimentale",
+      "riferimento_fonte": {
+        "titolo_documento": "",
+        "url": "",
+        "riferimento": "",
+        "data_pubblicazione": "",
+        "data_accesso": "",
+        "periodo_validita": "",
+        "territorio": "",
+        "condizioni_uso": "",
+        "responsabile_verifica": ""
+      }
+    },
+    "agri_ore_ha_cereali": {
+      "nome": "Ore per ettaro di cereali",
+      "valore": 35,
+      "unita": "ore/(ha·anno)",
+      "fonte": "FONTE DA VERIFICARE",
+      "stato": "da_verificare",
+      "tipo": "coefficiente",
+      "ambito": "agricoltura",
+      "descrizione": "Valore segnaposto da sostituire con fonte verificata.",
+      "dimensione": {
+        "ora": 1,
+        "ettaro": -1,
+        "anno": -1
+      },
+      "natura": "ipotesi_sperimentale",
+      "riferimento_fonte": {
+        "titolo_documento": "",
+        "url": "",
+        "riferimento": "",
+        "data_pubblicazione": "",
+        "data_accesso": "",
+        "periodo_validita": "",
+        "territorio": "",
+        "condizioni_uso": "",
+        "responsabile_verifica": ""
+      }
+    },
+    "agri_ore_ha_generico": {
+      "nome": "Ore per ettaro di coltura generica",
+      "valore": 300,
+      "unita": "ore/(ha·anno)",
+      "fonte": "FONTE DA VERIFICARE",
+      "stato": "da_verificare",
+      "tipo": "coefficiente",
+      "ambito": "agricoltura",
+      "descrizione": "Fallback provvisorio: evitare l'uso operativo senza classificazione.",
+      "dimensione": {
+        "ora": 1,
+        "ettaro": -1,
+        "anno": -1
+      },
+      "natura": "ipotesi_sperimentale",
+      "riferimento_fonte": {
+        "titolo_documento": "",
+        "url": "",
+        "riferimento": "",
+        "data_pubblicazione": "",
+        "data_accesso": "",
+        "periodo_validita": "",
+        "territorio": "",
+        "condizioni_uso": "",
+        "responsabile_verifica": ""
+      }
+    },
+    "edilizia_ore_mc_getto": {
+      "nome": "Ore per metro cubo di getto",
+      "valore": 8,
+      "unita": "ore/m³",
+      "fonte": "FONTE DA VERIFICARE",
+      "stato": "da_verificare",
+      "tipo": "coefficiente",
+      "ambito": "edilizia",
+      "descrizione": "Valore segnaposto.",
+      "dimensione": {
+        "ora": 1,
+        "m3": -1
+      },
+      "natura": "ipotesi_sperimentale",
+      "riferimento_fonte": {
+        "titolo_documento": "",
+        "url": "",
+        "riferimento": "",
+        "data_pubblicazione": "",
+        "data_accesso": "",
+        "periodo_validita": "",
+        "territorio": "",
+        "condizioni_uso": "",
+        "responsabile_verifica": ""
+      }
+    },
+    "edilizia_ore_mq_solaio": {
+      "nome": "Ore per metro quadrato di solaio",
+      "valore": 6,
+      "unita": "ore/m²",
+      "fonte": "FONTE DA VERIFICARE",
+      "stato": "da_verificare",
+      "tipo": "coefficiente",
+      "ambito": "edilizia",
+      "descrizione": "Valore segnaposto.",
+      "dimensione": {
+        "ora": 1,
+        "m2": -1
+      },
+      "natura": "ipotesi_sperimentale",
+      "riferimento_fonte": {
+        "titolo_documento": "",
+        "url": "",
+        "riferimento": "",
+        "data_pubblicazione": "",
+        "data_accesso": "",
+        "periodo_validita": "",
+        "territorio": "",
+        "condizioni_uso": "",
+        "responsabile_verifica": ""
+      }
+    },
+    "edilizia_ore_mq_muratura": {
+      "nome": "Ore per metro quadrato di muratura",
+      "valore": 3,
+      "unita": "ore/m²",
+      "fonte": "FONTE DA VERIFICARE",
+      "stato": "da_verificare",
+      "tipo": "coefficiente",
+      "ambito": "edilizia",
+      "descrizione": "Valore segnaposto.",
+      "dimensione": {
+        "ora": 1,
+        "m2": -1
+      },
+      "natura": "ipotesi_sperimentale",
+      "riferimento_fonte": {
+        "titolo_documento": "",
+        "url": "",
+        "riferimento": "",
+        "data_pubblicazione": "",
+        "data_accesso": "",
+        "periodo_validita": "",
+        "territorio": "",
+        "condizioni_uso": "",
+        "responsabile_verifica": ""
+      }
+    },
+    "edilizia_incidenza_min_manodopera": {
+      "nome": "Soglia provvisoria di incidenza della manodopera",
+      "valore": 0.145,
+      "unita": "quota",
+      "fonte": "FONTE DA VERIFICARE",
+      "stato": "da_verificare",
+      "tipo": "soglia",
+      "ambito": "edilizia",
+      "descrizione": "Non è un indice normativo universale e non deve essere presentato come tale.",
+      "in_uso": false,
+      "nota_utilizzo": "Sostituito dagli indici per categoria del D.M. 143/2021 (modulo screening_congruita_dm143): la soglia unica non è applicata.",
+      "natura": "ipotesi_sperimentale",
+      "riferimento_fonte": {
+        "titolo_documento": "",
+        "url": "",
+        "riferimento": "",
+        "data_pubblicazione": "",
+        "data_accesso": "",
+        "periodo_validita": "",
+        "territorio": "",
+        "condizioni_uso": "",
+        "responsabile_verifica": ""
+      }
+    },
+    "ristorazione_coperti_addetto": {
+      "nome": "Coperti per addetto al giorno",
+      "valore": 25,
+      "unita": "coperti/(addetto·giorno)",
+      "fonte": "FONTE DA VERIFICARE",
+      "stato": "da_verificare",
+      "tipo": "coefficiente",
+      "ambito": "ristorazione",
+      "descrizione": "Valore segnaposto, non validato.",
+      "dimensione": {
+        "coperto": 1,
+        "addetto": -1,
+        "giorno": -1
+      },
+      "natura": "ipotesi_sperimentale",
+      "riferimento_fonte": {
+        "titolo_documento": "",
+        "url": "",
+        "riferimento": "",
+        "data_pubblicazione": "",
+        "data_accesso": "",
+        "periodo_validita": "",
+        "territorio": "",
+        "condizioni_uso": "",
+        "responsabile_verifica": ""
+      }
+    },
+    "ristorazione_kg_materia_prima_coperto": {
+      "nome": "Materia prima per coperto",
+      "valore": 0.25,
+      "unita": "kg/coperto",
+      "fonte": "FONTE DA VERIFICARE",
+      "stato": "da_verificare",
+      "tipo": "coefficiente",
+      "ambito": "ristorazione",
+      "descrizione": "Al momento non contribuisce alla stima degli addetti.",
+      "in_uso": false,
+      "nota_utilizzo": "Nessun controllo lo usa: i dati sulle materie prime non sono acquisiti in modo affidabile.",
+      "natura": "ipotesi_sperimentale",
+      "riferimento_fonte": {
+        "titolo_documento": "",
+        "url": "",
+        "riferimento": "",
+        "data_pubblicazione": "",
+        "data_accesso": "",
+        "periodo_validita": "",
+        "territorio": "",
+        "condizioni_uso": "",
+        "responsabile_verifica": ""
+      }
+    },
+    "logistica_consegne_autista": {
+      "nome": "Consegne per autista al giorno",
+      "valore": 60,
+      "unita": "consegne/(autista·giorno)",
+      "fonte": "FONTE DA VERIFICARE",
+      "stato": "da_verificare",
+      "tipo": "coefficiente",
+      "ambito": "logistica",
+      "descrizione": "Valore segnaposto, non validato.",
+      "dimensione": {
+        "consegna": 1,
+        "addetto": -1,
+        "giorno": -1
+      },
+      "natura": "ipotesi_sperimentale",
+      "riferimento_fonte": {
+        "titolo_documento": "",
+        "url": "",
+        "riferimento": "",
+        "data_pubblicazione": "",
+        "data_accesso": "",
+        "periodo_validita": "",
+        "territorio": "",
+        "condizioni_uso": "",
+        "responsabile_verifica": ""
+      }
+    },
+    "logistica_km_autista": {
+      "nome": "Chilometri per autista al giorno",
+      "valore": 350,
+      "unita": "km/(autista·giorno)",
+      "fonte": "FONTE DA VERIFICARE",
+      "stato": "da_verificare",
+      "tipo": "coefficiente",
+      "ambito": "logistica",
+      "descrizione": "Valore segnaposto; non ancora usato nella formula.",
+      "in_uso": false,
+      "nota_utilizzo": "Nessun controllo lo usa: il tempo di guida dipende da percorsi e soste non disponibili.",
+      "natura": "ipotesi_sperimentale",
+      "riferimento_fonte": {
+        "titolo_documento": "",
+        "url": "",
+        "riferimento": "",
+        "data_pubblicazione": "",
+        "data_accesso": "",
+        "periodo_validita": "",
+        "territorio": "",
+        "condizioni_uso": "",
+        "responsabile_verifica": ""
+      }
+    },
+    "dpi_per_operaio_min": {
+      "nome": "DPI per operaio (indicatore semplificato)",
+      "valore": 1.0,
+      "unita": "unità/operaio",
+      "fonte": "FONTE DA VERIFICARE",
+      "stato": "da_verificare",
+      "tipo": "soglia",
+      "ambito": "trasversale",
+      "descrizione": "Gli acquisti non equivalgono necessariamente alle dotazioni effettivamente assegnate.",
+      "dimensione": {
+        "dpi": 1,
+        "addetto": -1
+      },
+      "natura": "ipotesi_sperimentale",
+      "riferimento_fonte": {
+        "titolo_documento": "",
+        "url": "",
+        "riferimento": "",
+        "data_pubblicazione": "",
+        "data_accesso": "",
+        "periodo_validita": "",
+        "territorio": "",
+        "condizioni_uso": "",
+        "responsabile_verifica": ""
+      }
+    },
+    "scarto_manodopera_attenzione": {
+      "nome": "Soglia scarto manodopera - attenzione",
+      "valore": 0.3,
+      "unita": "quota",
+      "fonte": "Soglia operativa sperimentale",
+      "stato": "sperimentale",
+      "tipo": "soglia",
+      "ambito": "trasversale",
+      "descrizione": "Soglia interna da validare empiricamente.",
+      "dimensione": {},
+      "natura": "soglia_configurabile",
+      "riferimento_fonte": {
+        "titolo_documento": "",
+        "url": "",
+        "riferimento": "",
+        "data_pubblicazione": "",
+        "data_accesso": "",
+        "periodo_validita": "",
+        "territorio": "",
+        "condizioni_uso": "",
+        "responsabile_verifica": ""
+      }
+    },
+    "scarto_manodopera_grave": {
+      "nome": "Soglia scarto manodopera - grave",
+      "valore": 0.6,
+      "unita": "quota",
+      "fonte": "Soglia operativa sperimentale",
+      "stato": "sperimentale",
+      "tipo": "soglia",
+      "ambito": "trasversale",
+      "descrizione": "Soglia interna da validare empiricamente.",
+      "dimensione": {},
+      "natura": "soglia_configurabile",
+      "riferimento_fonte": {
+        "titolo_documento": "",
+        "url": "",
+        "riferimento": "",
+        "data_pubblicazione": "",
+        "data_accesso": "",
+        "periodo_validita": "",
+        "territorio": "",
+        "condizioni_uso": "",
+        "responsabile_verifica": ""
+      }
+    },
+    "costo_addetto_scarto": {
+      "nome": "Scarto costo per addetto rispetto alla mediana",
+      "valore": 0.4,
+      "unita": "quota",
+      "fonte": "Soglia operativa sperimentale",
+      "stato": "sperimentale",
+      "tipo": "soglia",
+      "ambito": "trasversale",
+      "descrizione": "Confronto semplice, non corretto per territorio o dimensione.",
+      "dimensione": {},
+      "natura": "soglia_configurabile",
+      "riferimento_fonte": {
+        "titolo_documento": "",
+        "url": "",
+        "riferimento": "",
+        "data_pubblicazione": "",
+        "data_accesso": "",
+        "periodo_validita": "",
+        "territorio": "",
+        "condizioni_uso": "",
+        "responsabile_verifica": ""
+      }
+    }
+  },
+  "settori": {
+    "agricoltura": {
+      "nome": "Agricoltura",
+      "descrizione": "Stima sperimentale basata su superficie e coltura dichiarate.",
+      "stato": "sperimentale",
+      "campi": {
+        "coltura": {
+          "etichetta": "Coltura",
+          "tipo": "testo",
+          "obbligatorio": false,
+          "descrizione": "Coltura dichiarata; selezione da tassonomia controllata consigliata."
+        },
+        "ettari": {
+          "etichetta": "Superficie coltivata",
+          "tipo": "numero",
+          "obbligatorio": true,
+          "unita": "ha",
+          "minimo": 0,
+          "dimensione": {
+            "ettaro": 1
+          }
+        }
+      },
+      "stima": {
+        "op": "dividi",
+        "sinistra": {
+          "op": "moltiplica",
+          "elementi": [
+            {
+              "op": "campo",
+              "nome": "ettari"
+            },
+            {
+              "op": "lookup_coefficiente",
+              "campo": "coltura",
+              "mappa": {
+                "pomodoro": "agri_ore_ha_pomodoro",
+                "uva": "agri_ore_ha_uva",
+                "olivo": "agri_ore_ha_olivo",
+                "ortaggi": "agri_ore_ha_ortaggi",
+                "cereali": "agri_ore_ha_cereali"
+              },
+              "predefinito": "agri_ore_ha_generico"
+            }
+          ]
+        },
+        "destra": {
+          "op": "coefficiente",
+          "id": "ore_annue_addetto"
+        }
+      },
+      "campi_almeno_uno": [],
+      "richiede_validazione": true,
+      "controlli": [],
+      "moduli": [],
+      "versione_configurazione": 1
+    },
+    "edilizia": {
+      "nome": "Edilizia",
+      "descrizione": "Stima sperimentale da quantità di alcune lavorazioni; non equivale alla verifica normativa di congruità.",
+      "stato": "sperimentale",
+      "campi": {
+        "mc_getto": {
+          "etichetta": "Calcestruzzo gettato nell'anno di riferimento",
+          "tipo": "numero",
+          "obbligatorio": false,
+          "unita": "m³/anno",
+          "minimo": 0,
+          "dimensione": {
+            "m3": 1,
+            "anno": -1
+          }
+        },
+        "mq_solaio": {
+          "etichetta": "Solaio realizzato nell'anno di riferimento",
+          "tipo": "numero",
+          "obbligatorio": false,
+          "unita": "m²/anno",
+          "minimo": 0,
+          "dimensione": {
+            "m2": 1,
+            "anno": -1
+          }
+        },
+        "mq_muratura": {
+          "etichetta": "Muratura realizzata nell'anno di riferimento",
+          "tipo": "numero",
+          "obbligatorio": false,
+          "unita": "m²/anno",
+          "minimo": 0,
+          "dimensione": {
+            "m2": 1,
+            "anno": -1
+          }
+        }
+      },
+      "stima": {
+        "op": "dividi",
+        "sinistra": {
+          "op": "somma",
+          "elementi": [
+            {
+              "op": "moltiplica",
+              "elementi": [
+                {
+                  "op": "campo",
+                  "nome": "mc_getto",
+                  "default": 0
+                },
+                {
+                  "op": "coefficiente",
+                  "id": "edilizia_ore_mc_getto"
+                }
+              ]
+            },
+            {
+              "op": "moltiplica",
+              "elementi": [
+                {
+                  "op": "campo",
+                  "nome": "mq_solaio",
+                  "default": 0
+                },
+                {
+                  "op": "coefficiente",
+                  "id": "edilizia_ore_mq_solaio"
+                }
+              ]
+            },
+            {
+              "op": "moltiplica",
+              "elementi": [
+                {
+                  "op": "campo",
+                  "nome": "mq_muratura",
+                  "default": 0
+                },
+                {
+                  "op": "coefficiente",
+                  "id": "edilizia_ore_mq_muratura"
+                }
+              ]
+            }
+          ]
+        },
+        "destra": {
+          "op": "coefficiente",
+          "id": "ore_annue_addetto"
+        }
+      },
+      "campi_almeno_uno": [
+        "mc_getto",
+        "mq_solaio",
+        "mq_muratura"
+      ],
+      "richiede_validazione": true,
+      "nota_metodologica": "Le quantità sono riferite all'anno di riferimento (corretto nella v3.1: la formula divide per le ore annue di un addetto, quindi quantità senza periodo producevano addetti·anno). Per singoli cantieri occorre la durata dei lavori.",
+      "controlli": [
+        {
+          "tipo": "rapporto_minimo",
+          "id": "dpi",
+          "numeratore": "dpi_acquistati",
+          "denominatore": "dipendenti_dichiarati",
+          "coefficiente": "dpi_per_operaio_min",
+          "punti": 10,
+          "gravita": "attenzione",
+          "testo": "Acquisti registrati: {numeratore} DPI per {denominatore} addetti dichiarati. Indicatore esplorativo: acquisti, scorte, sostituzioni e assegnazioni non sono equivalenti."
+        },
+        {
+          "tipo": "rapporto_descrittivo",
+          "id": "incidenza_manodopera",
+          "numeratore": "costo_manodopera_dichiarato",
+          "denominatore": "valore_opera",
+          "chiave_risultato": "incidenza_manodopera_descrittiva"
+        }
+      ],
+      "moduli": [
+        "screening_congruita_dm143"
+      ],
+      "versione_configurazione": 1
+    },
+    "ristorazione": {
+      "nome": "Ristorazione",
+      "descrizione": "Stima sperimentale da coperti medi al giorno. Non include ancora giorni di apertura, turni e complessità del servizio.",
+      "stato": "sperimentale",
+      "campi": {
+        "coperti_giorno_stimati": {
+          "etichetta": "Coperti medi al giorno",
+          "tipo": "numero",
+          "obbligatorio": true,
+          "unita": "coperti/giorno",
+          "minimo": 0,
+          "dimensione": {
+            "coperto": 1,
+            "giorno": -1
+          }
+        },
+        "giorni_apertura": {
+          "etichetta": "Giorni di apertura alla settimana",
+          "tipo": "numero",
+          "obbligatorio": false,
+          "unita": "giorni/settimana",
+          "minimo": 1,
+          "dimensione": {
+            "giorno": 1,
+            "settimana": -1
+          }
+        }
+      },
+      "stima": {
+        "op": "dividi",
+        "sinistra": {
+          "op": "campo",
+          "nome": "coperti_giorno_stimati"
+        },
+        "destra": {
+          "op": "coefficiente",
+          "id": "ristorazione_coperti_addetto"
+        }
+      },
+      "campi_almeno_uno": [],
+      "richiede_validazione": true,
+      "controlli": [],
+      "moduli": [],
+      "versione_configurazione": 1
+    },
+    "logistica": {
+      "nome": "Logistica",
+      "descrizione": "Stima sperimentale da consegne giornaliere. Non include ancora distanze, tipologia del carico e complessità delle rotte.",
+      "stato": "sperimentale",
+      "campi": {
+        "consegne_giorno": {
+          "etichetta": "Consegne al giorno",
+          "tipo": "numero",
+          "obbligatorio": true,
+          "unita": "consegne/giorno",
+          "minimo": 0,
+          "dimensione": {
+            "consegna": 1,
+            "giorno": -1
+          }
+        },
+        "km_giorno": {
+          "etichetta": "Chilometri giornalieri",
+          "tipo": "numero",
+          "obbligatorio": false,
+          "unita": "km/giorno",
+          "minimo": 0,
+          "dimensione": {
+            "km": 1,
+            "giorno": -1
+          }
+        }
+      },
+      "stima": {
+        "op": "dividi",
+        "sinistra": {
+          "op": "campo",
+          "nome": "consegne_giorno"
+        },
+        "destra": {
+          "op": "coefficiente",
+          "id": "logistica_consegne_autista"
+        }
+      },
+      "campi_almeno_uno": [],
+      "richiede_validazione": true,
+      "controlli": [],
+      "moduli": [],
+      "versione_configurazione": 1
+    }
+  },
+  "documenti": [],
+  "relazioni": []
+}

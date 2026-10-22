@@ -1,0 +1,39 @@
+name: Metodologia
+description: Critica, dubbio o proposta su formule, segnali, soglie, valutazione o equità.
+labels: ["metodologia"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Le critiche motivate sono il contributo più utile in questa fase. Riferimenti: docs/D_METODOLOGIA.md, docs/H_LIMITI_NOTI.md.
+  - type: input
+    id: ambito
+    attributes:
+      label: Elemento interessato
+      placeholder: "es. formula del settore edilizia, soglia di scarto, prova di robustezza"
+    validations:
+      required: true
+  - type: textarea
+    id: problema
+    attributes:
+      label: Problema o dubbio
+      description: Cosa non convince e perché; quali conseguenze può avere (falsi positivi, distorsioni, gruppi penalizzati).
+    validations:
+      required: true
+  - type: textarea
+    id: proposta
+    attributes:
+      label: Proposta
+      description: Alternativa, verifica da eseguire o dato che servirebbe.
+  - type: textarea
+    id: riferimenti
+    attributes:
+      label: Riferimenti
+      description: Letteratura, norme, rapporti, esperienza di settore.
+  - type: checkboxes
+    id: dati
+    attributes:
+      label: Riservatezza
+      options:
+        - label: Confermo che la segnalazione non contiene dati personali o riservati.
+          required: true

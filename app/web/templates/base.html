@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>{% block titolo %}Emersione{% endblock %}</title>
+<style>
+  :root{
+    color-scheme:dark;
+    --bg:#15171c; --pan:#20232a; --pan2:#292d35; --bor:#454c58; --txt:#f1f3f7; --dim:#c1c8d2;
+    --alto:#ff777d; --medio:#ffcc70; --basso:#65dfaa; --nessuno:#c6ccd6; --acc:#91baff;
+    --error-bg:#382124; --notice-bg:#252d3b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  header{background:var(--pan);border-bottom:1px solid var(--bor);padding:14px 20px}
+  header h1{margin:0;font-size:19px;letter-spacing:.2px}
+  header nav{margin-top:10px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  header nav a{color:var(--dim);text-decoration:underline;text-underline-offset:3px}
+  header nav a:hover, a:focus-visible{color:var(--acc)}
+  main{max-width:1180px;margin:0 auto;padding:22px;}
+  a{color:var(--acc)}
+  .nota,.notice{background:var(--notice-bg);border:1px solid var(--bor);border-left:4px solid var(--acc);padding:12px 14px;border-radius:7px;color:var(--dim);font-size:14px;margin:0 0 18px}
+  .notice{margin:12px 0;color:var(--txt)}
+  .error{background:var(--error-bg);border:1px solid var(--alto);padding:10px 12px;border-radius:6px;color:var(--txt)}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:10px 11px;border-bottom:1px solid var(--bor);vertical-align:top}
+  th{color:var(--dim);font-weight:650}
+  tr:hover td{background:rgba(255,255,255,.025)}
+  .badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:750;border:1px solid currentColor;white-space:nowrap}
+  .alto{color:var(--alto)} .medio{color:var(--medio)} .basso{color:var(--basso)} .nessuno{color:var(--nessuno)} .non_valutabile{color:var(--medio)}
+  .filtri{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  input,select,textarea,button{max-width:100%;background:var(--pan2);color:var(--txt);border:1px solid #697282;border-radius:6px;padding:10px 11px;font:inherit}
+  input,select,textarea{width:100%;margin:4px 0 12px}
+  input[type=file]{width:auto}
+  input[type=checkbox]{width:auto;margin-right:7px;vertical-align:middle}
+  details.subcard{border:1px solid var(--bor);border-radius:7px;padding:12px;margin:12px 0}
+  details.subcard summary{cursor:pointer;padding:4px 0}
+  details.subcard textarea{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px;line-height:1.45}
+  input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+  button{cursor:pointer;font-weight:650;background:#303b4d;border-color:#7895c1}
+  button:hover{background:#3a4960}
+  form label{display:block;font-weight:650;margin-top:6px}
+  .inline-form{display:inline-flex;margin:0}
+  .inline-form button{padding:5px 9px;font-size:14px}
+  .card{background:var(--pan);border:1px solid var(--bor);border-radius:9px;padding:18px;margin-bottom:16px;min-width:0}
+  .card h2,.card h3{margin-top:0}
+  .segnale{border-left:4px solid var(--bor);padding:10px 12px;margin:10px 0;border-radius:4px;background:rgba(255,255,255,.02)}
+  .segnale.grave{border-left-color:var(--alto)} .segnale.attenzione{border-left-color:var(--medio)}
+  .k{color:var(--dim)} .big{font-size:34px;font-weight:800;line-height:1.15}
+  .narrow{max-width:620px;margin:8vh auto}
+  .table-scroll{overflow-x:auto;max-width:100%}
+  code{overflow-wrap:anywhere;font-size:.92em}
+  .skip{position:absolute;left:-9999px;top:0;background:var(--acc);color:#000;padding:8px 12px;z-index:10}
+  .skip:focus{left:8px;top:8px}
+  .ok{color:var(--basso)} .ko{color:var(--alto)}
+  .stato-chip{display:inline-block;padding:2px 8px;border:1px solid var(--bor);border-radius:6px;font-size:13px}
+  @media(max-width:700px){main{padding:14px}header{padding:12px 14px}table{font-size:13px}th,td{padding:8px}.card{padding:14px}}
+</style>
+</head>
+<body>
+<a class="skip" href="#contenuto">Vai al contenuto</a>
+<header>
+  <h1>EMERSIONE <span class="k">· piattaforma sperimentale di supporto all'analisi</span></h1>
+  {% if utente %}
+  <nav aria-label="Navigazione principale">
+    <a href="/">Elenco indicatori</a>
+    {% if puo.pratiche_consulta %}<a href="/pratiche">Pratiche</a>{% endif %}
+    <a href="/fonti">Fonti &amp; provenienza</a>
+    {% if puo.catalogo_fonti %}<a href="/fonti/catalogo">Catalogo dataset</a>{% endif %}
+    {% if puo.valutazione %}<a href="/valutazione">Valutazione del motore</a>{% endif %}
+    {% if puo.esecuzioni %}<a href="/esecuzioni">Esecuzioni</a>{% endif %}
+    {% if puo.importa_dati %}<a href="/carica">Importa dati</a>{% endif %}
+    {% if puo.consulta_settori %}<a href="/settori">Settori e parametri</a>{% endif %}
+    {% if puo.dipendenze %}<a href="/dipendenze">Dipendenze</a>{% endif %}
+    {% if puo.consulta_documenti %}<a href="/documenti">Documenti e relazioni</a>{% endif %}
+    {% if puo.osint_consulta %}<a href="/osint">OSINT</a>{% endif %}
+    {% if puo.grafo_consulta %}<a href="/grafo">Grafo aziende</a>{% endif %}
+    {% if puo.pratiche_consulta or puo.genera_report %}<a href="/report/verifica">Verifica relazione</a>{% endif %}
+    {% if puo.audit %}<a href="/audit">Registro accessi</a> <a href="/prestazioni">Prestazioni</a>{% endif %}
+    <span class="k">{{ utente.username }} · {{ utente.ruolo }}</span>
+    <form class="inline-form" method="post" action="/logout">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button type="submit">Esci</button>
+    </form>
+  </nav>
+  {% else %}
+  <nav aria-label="Accesso"><a href="/login">Accedi</a></nav>
+  {% endif %}
+</header>
+<main id="contenuto" tabindex="-1">
+  <div class="nota">
+    Emersione è un prototipo di supporto all'analisi. Gli indicatori segnalano anomalie da verificare e non accertano illeciti. I coefficienti non verificati e i settori sperimentali non devono essere usati come conclusioni ufficiali. I dati iniziali sono sintetici.
+  </div>
+  {% if not configurazione_corrente %}
+  <div class="error" role="alert">
+    La configurazione di settori o parametri è cambiata dopo l'ultima analisi salvata. I risultati mostrati non sono aggiornati rispetto alla configurazione corrente. Non considerarli correnti fino al ricalcolo esplicito.
+    {% if puo and puo.ricalcola %}
+    <form method="post" action="/ricalcola" style="margin-top:10px">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button type="submit">Ricalcola il lotto attivo</button>
+    </form>
+    {% endif %}
+  </div>
+  {% endif %}
+  {% if autorizzazione_scaduta %}
+  <div class="error" role="alert">L'autorizzazione dichiarata per il lotto attivo è scaduta: relazioni, esportazioni e nuove pratiche sono sospese finché il lotto non viene rinnovato o revocato.</div>
+  {% endif %}
+  {% block contenuto %}{% endblock %}
+</main>
+</body>
+</html>

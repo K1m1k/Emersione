@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block titolo %}Elenco indicatori · Emersione{% endblock %}
+{% block contenuto %}
+<p class="k">Origine dati: {{ origine }} — {{ totale }} record nel filtro corrente.</p>
+<h2>Elenco degli indicatori da verificare</h2>
+<p class="k">Uso interno riservato agli operatori autorizzati: non è una classifica pubblica. I punteggi sono indici tecnici di priorità basati su regole configurate e non rappresentano probabilità di illecito. Gli esiti "instabile" e "non valutabile" non vanno trattati come risultati affidabili.</p>
+<form class="filtri" method="get">
+  <label for="q">Cerca (identificativo, denominazione, città)</label>
+  <input id="q" name="q" value="{{ ricerca or '' }}" maxlength="100">
+  <label for="settore">Settore</label>
+  <select id="settore" name="settore">
+    <option value="">Tutti i settori</option>
+    {% for s in settori %}<option value="{{ s }}" {% if s==settore_sel %}selected{% endif %}>{{ s }}</option>{% endfor %}
+  </select>
+  <label for="livello">Esito</label>
+  <select id="livello" name="livello">
+    <option value="">Tutti gli esiti</option>
+    {% for l in ["alto","medio","basso","nessuno","non_valutabile"] %}
+      <option value="{{ l }}" {% if l==livello_sel %}selected{% endif %}>{{ l }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit">Applica filtri</button>
+</form>
+<div class="table-scroll"><table>
+  <thead><tr><th>Indice sperimentale</th><th>Esito</th><th>Azienda</th><th>Settore</th><th>Città</th><th>Indicatori</th><th>Stato</th></tr></thead>
+  <tbody>
+  {% for a in aziende %}
+  <tr>
+    <td><b>{{ a.analisi.punteggio if a.analisi.punteggio is not none else "N/D" }}</b></td>
+    <td><span class="badge {{ a.analisi.livello }}">{{ a.analisi.livello }}</span></td>
+    <td><a href="/azienda/{{ a.id }}">{{ a.ragione_sociale or a.id }}</a></td>
+    <td>{{ a.settore }}</td><td>{{ a.citta or "N/D" }}</td><td>{{ a.analisi.segnali|length }}</td>
+    <td>{{ a.analisi.stato_metodologico }}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% endblock %}

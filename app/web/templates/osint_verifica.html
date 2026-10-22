@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block titolo %}Verifica incrociata OSINT · Emersione{% endblock %}
+{% block contenuto %}
+<p><a href="/osint">&larr; OSINT</a></p>
+<div class="card">
+  <h2>Verifica incrociata</h2>
+  <form method="get" action="/osint/verifica"><label for="aff">Affermazione o termini da cercare nelle fonti acquisite</label><input id="aff" name="affermazione" value="{{ affermazione }}" maxlength="300" required><button type="submit">Cerca riscontri</button></form>
+  {% if r.errore %}<p class="error" role="alert">{{ r.errore }}</p>
+  {% elif r.esito %}
+    <p><b>Esito:</b> <span class="stato-chip">{{ r.esito|replace("_"," ") }}</span> — fonti indipendenti: {{ r.fonti_indipendenti }}; confermate dalla revisione: {{ r.confermate_da_revisione }}; contestate: {{ r.contestate }}.</p>
+    {% if r.contenuti_identici_su_host_diversi %}<p class="notice">Contenuti identici su host diversi (probabile ripubblicazione, non fonti indipendenti): {{ r.contenuti_identici_su_host_diversi|join(", ") }}</p>{% endif %}
+    <ul>{% for d, urls in r.domini.items() %}<li><b>{{ d }}</b>: {{ urls|join(", ") }}</li>{% endfor %}</ul>
+    <p class="k">{{ r.nota }}</p>
+  {% endif %}
+</div>
+{% endblock %}

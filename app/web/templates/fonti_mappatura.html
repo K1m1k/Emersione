@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block titolo %}Mapping fonte · Emersione{% endblock %}
+{% block contenuto %}
+<h2>Normalizza un'acquisizione di fonte</h2>
+<p class="k">Il mapping trasforma colonne/chiavi del payload in osservazioni di riferimento strutturate. Le osservazioni restano separate dal dataset aziendale e non aggiornano automaticamente il punteggio o i coefficienti.</p>
+<p><a href="/fonti">← Torna a fonti e acquisizioni</a></p>
+{% if esito %}<p class="error" role="alert">{{ esito }}</p>{% endif %}
+{% if anteprima %}
+<div class="card">
+  <h3>Metadati dell'acquisizione</h3>
+  <p><b>Fonte:</b> {{ anteprima.chiave_fonte }}</p>
+  <p><b>URL:</b> <a href="{{ anteprima.url_fonte }}" rel="noreferrer">{{ anteprima.url_fonte }}</a></p>
+  <p><b>Formato:</b> {{ anteprima.formato }} · <b>Record rilevati:</b> {{ anteprima.numero_righe }}</p>
+  <p><b>SHA-256:</b> <code>{{ anteprima.hash_fonte }}</code></p>
+  <p class="k">{{ anteprima.nota }}</p>
+</div>
+<div class="card">
+  <h3>Anteprima dati (massimo {{ anteprima.righe|length }} righe)</h3>
+  <div class="table-scroll"><table><thead><tr>{% for c in anteprima.colonne %}<th>{{ c }}</th>{% endfor %}</tr></thead><tbody>
+  {% for r in anteprima.righe %}<tr>{% for c in anteprima.colonne %}<td>{{ r[c] }}</td>{% endfor %}</tr>{% endfor %}
+  </tbody></table></div>
+</div>
+{% if puo.crea_mappature %}
+<div class="card">
+  <h3>Definisci il mapping</h3>
+  <p class="k">Scegli un campo numerico misurabile. Se il parsing non è univoco, indica il formato decimale corretto. Le righe senza valore numerico o senza unità verranno rifiutate e la transazione sarà annullata: non vengono scartate in silenzio.</p>
+  <form method="post" action="/fonti/mappatura/crea">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="hidden" name="acquisizione_id" value="{{ anteprima.acquisizione_id }}">
+    <label for="settore_id">Settore di riferimento</label>
+    <select id="settore_id" name="settore_id" required><option value="">Seleziona un settore attivo</option>{% for s in settori %}<option value="{{ s.id }}">{{ s.nome }} ({{ s.id }}) — stato: {{ s.stato }}</option>{% endfor %}</select>
+    <label for="parametro_id">Parametro a cui si riferiscono le osservazioni</label>
+    <select id="parametro_id" name="parametro_id" required><option value="">Seleziona un parametro</option>{% for p in parametri %}<option value="{{ p.id }}">{{ p.nome }} ({{ p.id }}) — {{ p.unita }} — ambito {{ p.ambito }}</option>{% endfor %}</select>
+    <label for="campo_valore">Colonna/campo del valore numerico</label>
+    <select id="campo_valore" name="campo_valore" required><option value="">Seleziona campo valore</option>{% for c in anteprima.colonne %}<option value="{{ c }}">{{ c }}</option>{% endfor %}</select>
+    {% for name, label in [('campo_periodo','Periodo/anno'),('campo_territorio','Territorio'),('campo_categoria','Categoria/attività'),('campo_unita','Unità di misura') ] %}
+    <label for="{{ name }}">{{ label }} (facoltativo)</label>
+    <select id="{{ name }}" name="{{ name }}"><option value="">Non mappare questo campo</option>{% for c in anteprima.colonne %}<option value="{{ c }}">{{ c }}</option>{% endfor %}</select>
+    {% endfor %}
+    <label for="unita_fissa">Unità fissa (solo se non scegli una colonna unità)</label>
+    <input id="unita_fissa" name="unita_fissa" maxlength="100" placeholder="Se vuoto, si usa l'unità del parametro selezionato">
+    <label for="formato_numero">Formato numerico</label>
+    <select id="formato_numero" name="formato_numero"><option value="automatico">Automatico (verificare i valori ambigui)</option><option value="virgola">Decimale con virgola, punto migliaia (1.234,56)</option><option value="punto">Decimale con punto, virgola migliaia (1,234.56)</option></select>
+    <button type="submit">Normalizza e salva in transazione</button>
+  </form>
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}

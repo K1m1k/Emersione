@@ -1,0 +1,49 @@
+name: Segnalazione di difetto
+description: Un comportamento del software diverso da quello atteso.
+labels: ["difetto"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Non inserire dati personali o riservati.** Riproduci il problema con i dati sintetici del progetto.
+        Le vulnerabilità di sicurezza vanno segnalate in privato (vedi SECURITY.md).
+  - type: input
+    id: versione
+    attributes:
+      label: Versione
+      placeholder: "es. 3.1.0 o identificativo del commit"
+    validations:
+      required: true
+  - type: textarea
+    id: passi
+    attributes:
+      label: Passi per riprodurre
+      placeholder: "1. ...\n2. ...\n3. ..."
+    validations:
+      required: true
+  - type: textarea
+    id: atteso
+    attributes:
+      label: Comportamento atteso
+    validations:
+      required: true
+  - type: textarea
+    id: osservato
+    attributes:
+      label: Comportamento osservato
+      description: Messaggi di errore, estratti di log (senza dati reali).
+      render: text
+    validations:
+      required: true
+  - type: input
+    id: ambiente
+    attributes:
+      label: Ambiente
+      placeholder: "es. Ubuntu 24.04, Python 3.13.1"
+  - type: checkboxes
+    id: dati
+    attributes:
+      label: Riservatezza
+      options:
+        - label: Confermo che la segnalazione non contiene dati personali o riservati.
+          required: true

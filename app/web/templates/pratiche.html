@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block titolo %}Pratiche · Emersione{% endblock %}
+{% block contenuto %}
+<div class="card">
+  <h2>Pratiche di approfondimento</h2>
+  <p class="k">Una pratica documenta il lavoro umano su un'azienda: finalità, ambito, note e decisioni. Non è un provvedimento e non avvia controlli o sanzioni. Le pratiche si aprono dalla scheda dell'azienda.</p>
+  {% if esito %}<p class="error" role="alert">{{ esito }}</p>{% endif %}
+  {% if pratiche %}
+  <div class="table-scroll"><table>
+    <tr><th scope="col">Pratica</th><th scope="col">Azienda</th><th scope="col">Stato</th><th scope="col">Finalità</th><th scope="col">Creata</th><th scope="col">Esecuzione</th></tr>
+    {% for p in pratiche %}<tr><td><a href="/pratiche/{{ p.id }}">{{ p.id }}</a></td><td><a href="/azienda/{{ p.azienda_id }}">{{ p.azienda_id }}</a></td>
+      <td><span class="stato-chip">{{ p.stato|replace("_"," ") }}</span></td><td>{{ p.finalita }}</td><td>{{ p.creata_il }} · {{ p.creata_da }}</td><td>{{ p.esecuzione_id or "—" }}</td></tr>{% endfor %}
+  </table></div>
+  {% else %}<p>Nessuna pratica registrata.</p>{% endif %}
+</div>
+{% endblock %}

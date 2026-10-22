@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block titolo %}Importazione dati · Emersione{% endblock %}
+{% block contenuto %}
+{% if esito %}<p class="notice" role="status">{{ esito }}</p>{% endif %}
+<div class="card">
+  <h2>1. Validazione e anteprima</h2>
+  <p class="k">Il file viene validato per intero e analizzato in un'area temporanea: il lotto attivo <b>non cambia</b> finché non confermi al passo 2. Sono ammessi solo dati che l'ente conferente è legittimato a trattare e a far elaborare. Limiti: 5 MiB e 25.000 righe.</p>
+  <p class="k">Colonne obbligatorie: <code>id, settore, dipendenti_dichiarati</code> più i campi richiesti dal settore. <code>costo_lavoro_per_addetto</code> è facoltativo. Campi facoltativi per lo screening edilizio: <code>categoria_opera</code>, <code>tipo_commessa</code>, <code>valore_opera</code>, <code>costo_manodopera_dichiarato</code> (vedi <code>docs/INDICI_EDILIZIA.md</code>). Identificativi per il grafo: <code>gruppo_societario_id</code>, <code>codice_contratto_pubblico</code>, <code>codice_subappalto</code>, <code>sede_locale_codice</code>.</p>
+  <form method="post" enctype="multipart/form-data" action="/carica">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <fieldset><legend>Provenienza e autorizzazione (sezione 13 del capitolato)</legend>
+      <label for="conferente">Soggetto conferente</label><input id="conferente" name="conferente" maxlength="500" required value="{{ dati_form.conferente or '' }}">
+      <label for="titolare">Titolare del trattamento</label><input id="titolare" name="titolare" maxlength="500" required value="{{ dati_form.titolare or '' }}">
+      <label for="finalita">Finalità dichiarata</label><input id="finalita" name="finalita" maxlength="500" required value="{{ dati_form.finalita or '' }}">
+      <label for="autorizzazione">Autorizzazione o base giuridica indicata (riferimento)</label><input id="autorizzazione" name="autorizzazione" maxlength="500" required value="{{ dati_form.autorizzazione or '' }}">
+      <label for="data_ricezione">Data di ricezione (AAAA-MM-GG)</label><input id="data_ricezione" name="data_ricezione" type="date" required value="{{ dati_form.data_ricezione or '' }}">
+      <label for="scadenza_autorizzazione">Scadenza dell'autorizzazione (facoltativa)</label><input id="scadenza_autorizzazione" name="scadenza_autorizzazione" type="date" value="{{ dati_form.scadenza_autorizzazione or '' }}">
+      <label for="condizioni_uso">Condizioni d'uso e di conservazione</label><input id="condizioni_uso" name="condizioni_uso" maxlength="500" required value="{{ dati_form.condizioni_uso or '' }}">
+    </fieldset>
+    <label for="file">File CSV (UTF-8)</label>
+    <input id="file" type="file" name="file" accept=".csv,text/csv" required>
+    <button type="submit">Valida e mostra anteprima</button>
+    <p class="k">Il software registra quanto dichiarato: non verifica la legittimità del trattamento, che resta responsabilità dell'ente e del suo DPO.</p>
+  </form>
+</div>
+{% if staging %}
+<div class="card">
+  <h2>2. Anteprima e conferma</h2>
+  <p><b>File:</b> {{ staging.filename }} · <b>SHA-256:</b> <code>{{ staging.sha256 }}</code> · <b>Record validi:</b> {{ anteprima.totale }}</p>
+  <p><b>Conferente:</b> {{ staging.provenienza.conferente }} · <b>Finalità:</b> {{ staging.provenienza.finalita }} · <b>Autorizzazione:</b> {{ staging.provenienza.autorizzazione }}{% if staging.provenienza.scadenza_autorizzazione %} (scade il {{ staging.provenienza.scadenza_autorizzazione }}){% endif %}</p>
+  <p class="k">Settori: {% for s, n in anteprima.per_settore.items() %}{{ s }} {{ n }}{% if not loop.last %} · {% endif %}{% endfor %}<br>
+  Esiti: {% for l, n in anteprima.per_livello.items() %}{{ l|replace("_"," ") }} {{ n }}{% if not loop.last %} · {% endif %}{% endfor %}</p>
+  <div class="table-scroll"><table><tr><th scope="col">ID</th><th scope="col">Settore</th><th scope="col">Indice</th><th scope="col">Esito</th></tr>
+  {% for a in anteprima.primi %}<tr><td>{{ a.id }}</td><td>{{ a.settore }}</td><td>{{ a.analisi.punteggio if a.analisi.punteggio is not none else "N/D" }}</td><td>{{ a.analisi.livello|replace("_"," ") }}</td></tr>{% endfor %}</table></div>
+  <p class="k">La conferma sostituisce il lotto attivo per tutti gli utenti, in un'unica transazione. Se il salvataggio fallisce, resta attivo il lotto precedente.</p>
+  <form method="post" action="/carica/conferma" class="inline-form"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="token" value="{{ token }}"><button type="submit">Conferma e attiva il lotto</button></form>
+  <form method="post" action="/carica/annulla" class="inline-form"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button type="submit">Annulla</button></form>
+</div>
+{% endif %}
+<div class="card">
+  <h2>Lotto attivo</h2>
+  {% if provenienza_attiva %}
+    <p><b>Lotto:</b> <code>{{ provenienza_attiva.lotto_id }}</code> · <b>File:</b> {{ provenienza_attiva.file }} · caricato da {{ provenienza_attiva.caricato_da }} il {{ provenienza_attiva.caricato_il }}</p>
+    <p><b>Conferente:</b> {{ provenienza_attiva.conferente }} · <b>Titolare:</b> {{ provenienza_attiva.titolare }} · <b>Finalità:</b> {{ provenienza_attiva.finalita }}<br>
+    <b>Autorizzazione:</b> {{ provenienza_attiva.autorizzazione }}{% if provenienza_attiva.scadenza_autorizzazione %} · scadenza {{ provenienza_attiva.scadenza_autorizzazione }}{% endif %} · <b>Condizioni d'uso:</b> {{ provenienza_attiva.condizioni_uso }}</p>
+    <details class="subcard"><summary>Revoca il lotto (dati errati, autorizzazione revocata, richiesta del conferente)</summary>
+      <form method="post" action="/lotto/revoca"><input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label for="motivo_revoca">Motivo della revoca</label><textarea id="motivo_revoca" name="motivo" rows="2" maxlength="1000" required></textarea>
+        <button type="submit">Revoca e ripristina il dataset dimostrativo</button></form></details>
+  {% else %}<p class="k">Il lotto attivo è il dataset dimostrativo sintetico.</p>{% endif %}
+  {% if storico_lotti %}<h3>Storico dei lotti</h3><div class="table-scroll"><table><tr><th scope="col">Lotto</th><th scope="col">File</th><th scope="col">Conferente</th><th scope="col">Caricato</th><th scope="col">Stato</th></tr>
+  {% for l in storico_lotti %}<tr><td><code>{{ l.lotto_id[:12] }}</code></td><td>{{ l.file }}</td><td>{{ l.conferente }}</td><td>{{ l.caricato_il }} · {{ l.caricato_da }}</td><td>{{ l.stato }}{% if l.motivo_revoca %}: {{ l.motivo_revoca }}{% endif %}</td></tr>{% endfor %}</table></div>{% endif %}
+</div>
+<div class="card">
+  <h3>Ripristino dimostrativo</h3>
+  <p class="k">Sostituisce il lotto con le 500 aziende sintetiche; non elimina la cronologia dell'audit né lo storico delle esecuzioni.</p>
+  <form method="post" action="/ripristina">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button type="submit">Carica dati sintetici dimostrativi</button>
+  </form>
+</div>
+{% endblock %}

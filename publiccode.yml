@@ -1,0 +1,77 @@
+# Metadati secondo lo standard publiccode.yml
+# https://yml.publiccode.tools/
+publiccodeYmlVersion: "0.4"
+
+name: Emersione
+url: "https://github.com/K1m1k/emersione"
+softwareVersion: "3.1.0"
+releaseDate: "2026-10-22"
+platforms:
+  - web
+
+categories:
+  - data-analytics
+  - data-collection
+  - it-security
+
+developmentStatus: development
+softwareType: "standalone/web"
+
+intendedAudience:
+  scope:
+    - employment
+    - government
+  countries:
+    - it
+
+description:
+  it:
+    localisedName: Emersione
+    genericName: Analisi di indicatori di irregolarità del lavoro
+    shortDescription: >-
+      Prototipo per individuare, con regole spiegabili, elementi che meritano
+      un approfondimento umano su possibili irregolarità del lavoro.
+    longDescription: >-
+      Emersione è un prototipo di ricerca che aiuta operatori autorizzati a
+      individuare elementi che meritano un approfondimento umano su possibili
+      irregolarità del lavoro. Confronta grandezze dichiarate dalle imprese
+      con valori attesi calcolati da formule dichiarative per settore, con
+      coefficienti dotati di fonte, versione e stato di validazione. Ogni
+      risultato è spiegato, sottoposto a prova di robustezza e registrato in
+      un audit verificabile. Il sistema non accerta illeciti, non produce
+      classifiche pubbliche e lascia ogni decisione all'operatore. Nuovi
+      settori si aggiungono tramite registro, con collaudo automatico e
+      approvazioni con separazione dei compiti. La versione attuale funziona
+      su dati sintetici: coefficienti, metodologia e conformità normativa
+      devono ancora essere validati prima di qualsiasi uso su dati reali.
+    documentation: "https://github.com/K1m1k/emersione/tree/main/docs"
+    features:
+      - Formule dichiarative per settore con analisi dimensionale
+      - Coefficienti con fonte, versione e stato di validazione
+      - Prova di robustezza con variazione dei parametri
+      - Ciclo di vita dei settori con collaudo automatico e approvazioni
+      - Audit con catena di impronte e relazioni PDF verificabili
+      - Acquisizione da fonti pubbliche (ISTAT, ANAC) con provenienza
+      - Controllo degli accessi per ruolo
+
+legal:
+  license: EUPL-1.2
+  mainCopyrightOwner: K1m1k
+  repoOwner: K1m1k
+
+maintenance:
+  type: community
+  contacts:
+    - name: K1m1k
+
+localisation:
+  localisationReady: false
+  availableLanguages:
+    - it
+
+dependsOn:
+  open:
+    - name: Python
+      versionMin: "3.13"
+    - name: SQLite
+      versionMin: "3"

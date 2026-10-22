@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block titolo %}Settori e parametri · Emersione{% endblock %}
+{% block contenuto %}
+<div class="card">
+  <h2>Registro dei settori</h2>
+  <p class="k">Un nuovo settore nasce in <b>bozza</b> e non produce risultati operativi finché non supera il collaudo automatico e le approvazioni previste (pagina "Gestisci" di ciascun settore). Le approvazioni registrano decisioni umane: non convalidano scientificamente fonti, formule o coefficienti.</p>
+  {% if esito %}<p class="notice" role="status">{{ esito }}</p>{% endif %}
+  <div class="table-scroll"><table>
+    <thead><tr><th scope="col">Settore</th><th scope="col">Identificativo</th><th scope="col">Versione</th><th scope="col">Stato</th><th scope="col">Descrizione</th><th scope="col">Gestione</th></tr></thead>
+    <tbody>{% for s in settori %}<tr><td>{{ s.nome }}</td><td><code>{{ s.id }}</code></td><td>{{ s.versione_configurazione or 1 }}</td><td><span class="stato-chip">{{ s.stato|replace("_"," ") }}</span>{% if s.motivo_revisione %}<br><span class="k">{{ s.motivo_revisione }}</span>{% endif %}</td><td>{{ s.descrizione }}</td><td><a href="/settori/{{ s.id }}/gestione">Collaudo, approvazioni e versioni</a></td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+<div class="card">
+  <h2>Aggiungi un settore sperimentale</h2>
+  <p class="k">Il modello guidato supporta una prima formula standard. Metodologie multi-parametro o formule più complesse richiedono una configurazione dichiarativa revisionata e test dedicati.</p>
+  <form method="post" action="/settori/crea">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label for="nome">Nome del settore</label><input id="nome" name="nome" maxlength="80" required>
+    <label for="descrizione">Descrizione e limiti dell'analisi</label><textarea id="descrizione" name="descrizione" maxlength="500" rows="2" required></textarea>
+    <label for="campo">Nome tecnico del dato di produzione (snake_case)</label><input id="campo" name="campo" pattern="[a-z][a-z0-9_]{0,63}" maxlength="64" required>
+    <label for="etichetta_campo">Etichetta leggibile</label><input id="etichetta_campo" name="etichetta_campo" maxlength="100" required>
+    <label for="unita_campo">Unità di misura del dato</label><input id="unita_campo" name="unita_campo" maxlength="40" placeholder="es. tonnellate/anno" required>
+    <label for="metodo">Metodo di stima</label>
+    <select id="metodo" name="metodo" required>
+      <option value="ore_per_unita">Ore di lavoro per unità prodotta, convertite in addetti equivalenti annui</option>
+      <option value="unita_per_addetto">Unità gestibili da un addetto nel periodo di riferimento</option>
+    </select>
+    <label for="valore_coefficiente">Valore del coefficiente iniziale</label><input id="valore_coefficiente" name="valore_coefficiente" type="number" min="0.000001" max="1000000000000" step="any" required>
+    <label for="nome_coefficiente">Nome del parametro</label><input id="nome_coefficiente" name="nome_coefficiente" maxlength="100" required>
+    <label for="unita_coefficiente">Unità di misura del coefficiente</label><input id="unita_coefficiente" name="unita_coefficiente" maxlength="60" placeholder="es. ore/tonnellata" required>
+    <label for="fonte">Fonte documentale o motivazione provvisoria</label><input id="fonte" name="fonte" maxlength="300" required>
+    <label for="riferimento_url">URL della fonte (facoltativo)</label><input id="riferimento_url" name="riferimento_url" type="url" maxlength="500" placeholder="https://...">
+    <button type="submit">Crea settore in bozza</button>
+  </form>
+</div>
+<div class="card">
+  <h2>Aggiungi un campo produttivo a un settore</h2>
+  <p class="k">Usa questa funzione quando un settore deve raccogliere più grandezze produttive. Le colonne diventano disponibili nella validazione CSV; una formula deve riferirsi ai campi che utilizza. Le modifiche riaprono la revisione metodologica.</p>
+  <form method="post" action="/settori/campi/aggiungi">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label for="campo_settore">Settore</label><select id="campo_settore" name="settore_id" required>{% for s in settori if s.stato not in ['sospeso', 'archiviato'] %}<option value="{{ s.id }}">{{ s.nome }} — {{ s.id }}</option>{% endfor %}</select>
+    <label for="nuovo_campo">Nome tecnico del campo (snake_case)</label><input id="nuovo_campo" name="campo" pattern="[a-z][a-z0-9_]{0,63}" maxlength="64" required>
+    <label for="nuova_etichetta">Etichetta leggibile</label><input id="nuova_etichetta" name="etichetta" maxlength="100" required>
+    <label for="nuova_unita">Unità di misura</label><input id="nuova_unita" name="unita" maxlength="60" required>
+    <label for="nuovo_minimo">Valore minimo (facoltativo)</label><input id="nuovo_minimo" name="minimo" type="number" step="any" min="-1000000000000" max="1000000000000">
+    <label for="nuovo_massimo">Valore massimo (facoltativo)</label><input id="nuovo_massimo" name="massimo" type="number" step="any" min="-1000000000000" max="1000000000000">
+    <label><input type="checkbox" name="obbligatorio" checked> Campo obbligatorio per questo settore</label>
+    <button type="submit">Aggiungi campo e riapri revisione</button>
+  </form>
+</div>
+<div class="card">
+  <h2>Configura formule settoriali</h2>
+  <p class="k">Le formule usano JSON dichiarativo, mai codice Python. Operazioni ammesse: <code>campo</code>, <code>coefficiente</code>, <code>lookup_coefficiente</code>, <code>somma</code>, <code>moltiplica</code>, <code>dividi</code>, <code>costante</code>. Il controllo verifica campi e parametri esistenti, ambito e struttura; non certifica la correttezza scientifica né la compatibilità dimensionale delle unità.</p>
+  <p class="notice">Ogni modifica salva una nuova versione, conserva la configurazione precedente e imposta il settore su <b>in revisione</b>. Il lotto attivo diventa obsoleto finché un amministratore non ricalcola le analisi.</p>
+  {% for s in settori if s.stato not in ['sospeso', 'archiviato'] %}
+    <details class="subcard">
+      <summary><b>{{ s.nome }}</b> — versione {{ s.versione_configurazione or 1 }} — {{ s.stato }}</summary>
+      <p class="k">Campi disponibili: {% for nome, definizione in s.campi.items() %}<code>{{ nome }}</code> ({{ definizione.unita }}{% if not definizione.obbligatorio %}, facoltativo{% endif %}){% if not loop.last %}; {% endif %}{% endfor %}</p>
+      <form method="post" action="/settori/formula">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="settore_id" value="{{ s.id }}">
+        <label for="formula_{{ s.id }}">Formula dichiarativa (JSON)</label>
+        <textarea id="formula_{{ s.id }}" name="formula_json" rows="10" maxlength="16384" spellcheck="false" required>{{ s.stima | tojson(indent=2) }}</textarea>
+        <p class="k">I parametri utilizzabili sono quelli del settore e quelli trasversali. Prima del salvataggio verifica la logica, le unità di misura, il periodo di riferimento e la fonte di ogni coefficiente.</p>
+        <button type="submit">Valida, versiona e salva formula</button>
+      </form>
+    </details>
+  {% endfor %}
+</div>
+<div class="card">
+  <h2>Aggiungi un parametro numerico</h2>
+  <p class="k">Un parametro può essere associato a un settore o essere trasversale. Ogni nuovo parametro resta <b>da verificare</b> e non modifica automaticamente le formule già esistenti.</p>
+  <form method="post" action="/settori/parametri/crea">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label for="param_nome">Nome del parametro</label><input id="param_nome" name="nome" maxlength="100" required>
+    <label for="param_valore">Valore numerico iniziale</label><input id="param_valore" name="valore" type="number" step="any" min="-1000000000000" max="1000000000000" required>
+    <label for="param_unita">Unità di misura</label><input id="param_unita" name="unita" maxlength="60" required>
+    <label for="param_ambito">Ambito</label><select id="param_ambito" name="ambito" required><option value="trasversale">Trasversale</option>{% for s in settori %}<option value="{{ s.id }}">{{ s.nome }}</option>{% endfor %}</select>
+    <label for="param_fonte">Fonte o motivazione da verificare</label><input id="param_fonte" name="fonte" maxlength="500" required>
+    <label for="param_descrizione">Descrizione (facoltativa)</label><textarea id="param_descrizione" name="descrizione" maxlength="500" rows="2"></textarea>
+    <button type="submit">Registra parametro non validato</button>
+  </form>
+</div>
+<div class="card">
+  <h2>Catalogo parametri</h2>
+  <div class="table-scroll"><table>
+    <thead><tr><th scope="col">Parametro</th><th scope="col">Valore</th><th scope="col">Unità</th><th scope="col">Fonte</th><th scope="col">Natura · stato</th><th scope="col">Ambito</th><th scope="col">Impatto</th></tr></thead>
+    <tbody>{% for p in parametri %}<tr><td>{{ p.nome }}<br><code>{{ p.id }}</code>{% if p.in_uso == false %}<br><span class="k">Non usato: {{ p.nota_utilizzo }}</span>{% endif %}</td><td>{{ p.valore }}</td><td>{{ p.unita }}</td><td>{{ p.fonte }}{% if p.riferimento_fonte and p.riferimento_fonte.titolo_documento %}<br><span class="k">{{ p.riferimento_fonte.titolo_documento }}, {{ p.riferimento_fonte.riferimento }}</span>{% endif %}</td><td>{{ nature_parametro.get(p.natura, p.natura) }}<br><b>{{ p.stato }}</b></td><td>{{ p.ambito }}</td><td><a href="/dipendenze?tipo=parametro&amp;id={{ p.id }}">Vedi impatto prima di modificare</a></td></tr>{% endfor %}</tbody>
+  </table></div>
+  <h2>Gestione, versionamento e verifica dei parametri</h2>
+  <p class="k">La modifica di valore, unità, fonte o definizione crea una nuova versione. Per passare a <b>verificato</b> o <b>approvato</b> servono un documento caricato e associato al parametro e una nota motivata; il software registra la revisione ma non autentica la fonte né certifica la competenza del revisore. Per cambiare un valore già verificato, prima crea una nuova revisione in stato da verificare. Solo il ruolo <b>revisore</b> può dichiarare un parametro verificato o approvato; una modifica di valore o definizione riporta in revisione i settori che usano il parametro.</p>
+  {% for p in parametri %}
+    <details class="subcard">
+      <summary><b>{{ p.nome }}</b> — {{ p.id }} — v{{ p.versione or 1 }} — {{ p.stato }}</summary>
+      <form method="post" action="/settori/parametri/aggiorna">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="parametro_id" value="{{ p.id }}">
+        <p class="k">Ambito non modificabile: <code>{{ p.ambito }}</code>. Per trasferire una metodologia a un ambito differente, crea un parametro distinto e aggiorna la formula sottoponendola a revisione.</p>
+        <label for="nome_{{ p.id }}">Nome</label><input id="nome_{{ p.id }}" name="nome" maxlength="100" value="{{ p.nome }}" required>
+        <label for="valore_{{ p.id }}">Valore</label><input id="valore_{{ p.id }}" name="valore" type="number" step="any" min="-1000000000000" max="1000000000000" value="{{ p.valore }}" required>
+        <label for="unita_{{ p.id }}">Unità di misura</label><input id="unita_{{ p.id }}" name="unita" maxlength="60" value="{{ p.unita }}" required>
+        <label for="fonte_{{ p.id }}">Fonte dichiarata</label><input id="fonte_{{ p.id }}" name="fonte" maxlength="500" value="{{ p.fonte }}" required>
+        <label for="descrizione_{{ p.id }}">Definizione e limiti</label><textarea id="descrizione_{{ p.id }}" name="descrizione" maxlength="500" rows="2">{{ p.descrizione }}</textarea>
+        <label for="stato_{{ p.id }}">Stato del parametro</label><select id="stato_{{ p.id }}" name="stato" required>
+          {% for stato in ['da_verificare', 'sperimentale', 'verificato', 'approvato', 'scaduto', 'sostituito'] %}<option value="{{ stato }}" {% if p.stato == stato %}selected{% endif %}>{{ stato }}</option>{% endfor %}
+        </select>
+        <label for="doc_validazione_{{ p.id }}">Documento di validazione (richiesto per verificato/approvato)</label>
+        <select id="doc_validazione_{{ p.id }}" name="documento_validazione"><option value="">Seleziona il documento già associato al parametro</option>{% for d in documenti %}<option value="{{ d.id }}" {% if p.documento_validazione == d.id %}selected{% endif %}>{{ d.titolo }} — {{ d.id }}{% if d.parametro == p.id %} (associato){% endif %}</option>{% endfor %}</select>
+        <label for="nota_validazione_{{ p.id }}">Nota della verifica (minimo 20 caratteri per verificato/approvato)</label><textarea id="nota_validazione_{{ p.id }}" name="nota_validazione" maxlength="1000" rows="3">{{ p.nota_validazione or '' }}</textarea>
+        <label for="natura_{{ p.id }}">Natura del parametro</label>
+        <select id="natura_{{ p.id }}" name="natura">{% for k, v in nature_parametro.items() %}<option value="{{ k }}" {% if p.natura == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select>
+        <fieldset><legend>Riferimento alla fonte (obbligatori per verificare: titolo, riferimento, data di accesso, periodo di validità, territorio)</legend>
+        {% for c, etichetta in [("titolo_documento","Titolo del documento"),("url","Collegamento diretto"),("riferimento","Articolo, tabella, pagina o sezione"),("data_pubblicazione","Data di pubblicazione (AAAA-MM-GG)"),("data_accesso","Data di accesso e verifica (AAAA-MM-GG)"),("periodo_validita","Periodo di validità"),("territorio","Territorio e popolazione"),("condizioni_uso","Condizioni di utilizzo"),("responsabile_verifica","Responsabile della verifica")] %}
+          <label for="rf_{{ c }}_{{ p.id }}">{{ etichetta }}</label><input id="rf_{{ c }}_{{ p.id }}" name="rf_{{ c }}" maxlength="500" value="{{ (p.riferimento_fonte or {}).get(c, '') }}">
+        {% endfor %}</fieldset>
+        <button type="submit">Salva nuova versione del parametro</button>
+      </form>
+      {% if p.validato_da %}<p class="k">Ultima verifica registrata da {{ p.validato_da }} il {{ p.validato_il }}; documento {{ p.documento_validazione }}. Questa registrazione è una dichiarazione operativa, non una certificazione automatica.</p>{% endif %}
+    </details>
+  {% endfor %}
+</div>
+{% endblock %}

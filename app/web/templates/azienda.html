@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block titolo %}{{ az.ragione_sociale if az else "Azienda" }} · Emersione{% endblock %}
+{% block contenuto %}
+{% if not az %}
+  <p>Azienda non trovata.</p>
+{% else %}
+  <p><a href="/">&larr; Torna all'elenco</a></p>
+  {% if puo.genera_report %}
+    <p><a class="button-link" href="/azienda/{{ az.id }}/report.pdf">Scarica relazione PDF sperimentale (senza pratica)</a></p>
+  {% endif %}
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+      <div><div style="font-size:21px;font-weight:700">{{ az.ragione_sociale or "Denominazione non disponibile" }}</div><div class="k">{{ az.id }} · {{ az.settore }} · {{ az.citta or "Città non disponibile" }}</div></div>
+      <div style="text-align:center"><div class="big">{{ az.analisi.punteggio if az.analisi.punteggio is not none else "N/D" }}</div><span class="badge {{ az.analisi.livello }}">{{ az.analisi.livello }}</span></div>
+    </div>
+    <p class="notice">Stato metodologico: <b>{{ az.analisi.stato_metodologico }}</b>. Questo indice non costituisce un accertamento e deve essere interpretato con revisione umana.</p>
+    {% if az.analisi.formula %}<p><b>Calcolo:</b> {{ az.analisi.formula }}</p>{% endif %}
+    {% set rb = az.analisi.robustezza %}
+    {% if rb %}<p><b>Robustezza:</b>
+      {% if rb.stato == "instabile" %}<span class="ko">INSTABILE</span> — con una variazione di ±{{ (rb.variazione * 100)|int }}% dei parametri {{ rb.parametri_sensibili|join(", ") }} il livello assume i valori {{ rb.livelli_osservati|join(", ") }}. Il risultato non va presentato come affidabile.
+      {% elif rb.stato == "stabile" %}<span class="ok">stabile</span> — il livello non cambia variando i parametri della formula di ±{{ (rb.variazione * 100)|int }}%.
+      {% else %}non calcolata (analisi non valutabile).{% endif %}</p>{% endif %}
+    <p class="k">Motore {{ az.analisi.versione_motore }} · configurazione del settore v{{ az.analisi.versione_configurazione_settore }}</p>
+    {% if az.analisi.limitazioni %}<ul>{% for limite in az.analisi.limitazioni %}<li>{{ limite }}</li>{% endfor %}</ul>{% endif %}
+  </div>
+  <div class="card">
+    <h2>Indicatori rilevati</h2>
+    {% if az.analisi.segnali %}
+      {% for s in az.analisi.segnali %}
+        <div class="segnale {{ s.gravita }}"><div><b>{{ s.tipo }}</b> — {{ s.gravita }}</div><p>{{ s.testo }}</p>
+        {% if s.parametri %}<div class="k"><b>Parametri e fonti:</b><ul>{% for p in s.parametri %}<li>{{ p.nome }}: {{ p.valore }} {{ p.unita }}; fonte: {{ p.fonte }}; stato: {{ p.stato }}.</li>{% endfor %}</ul></div>{% endif %}
+        </div>
+      {% endfor %}
+    {% else %}<p class="k">Nessun indicatore è stato attivato dalle regole disponibili. Ciò non prova la regolarità dell'azienda.</p>{% endif %}
+    {% if az.analisi.incidenza_manodopera_descrittiva is not none %}<p><b>Incidenza descrittiva della manodopera sull'opera:</b> {{ (az.analisi.incidenza_manodopera_descrittiva * 100)|round(2) }}%.</p>{% endif %}
+    {% if az.analisi.pre_screening_congruita_edilizia %}
+      {% set c = az.analisi.pre_screening_congruita_edilizia %}
+      <div class="card"><h3>Screening preliminare dell'indice tabellare edilizio</h3>
+      <p><b>Stato:</b> {{ c.stato }}</p><p>{{ c.nota }}</p>
+      {% if c.get("categoria") %}<p><b>Categoria:</b> {{ c.categoria }}</p>{% endif %}
+      {% if c.get("incidenza_dichiarata") is not none and c.get("indice_minimo_tabellare") is not none and c.get("scostamento") is not none %}<p><b>Incidenza dichiarata:</b> {{ (c.incidenza_dichiarata * 100)|round(2) }}%; <b>indice tabellare:</b> {{ (c.indice_minimo_tabellare * 100)|round(2) }}%; <b>scostamento:</b> {{ (c.scostamento * 100)|round(2) }} punti percentuali.</p>{% endif %}
+      {% if c.get("mancanti") %}<p><b>Dati mancanti:</b> {{ c.mancanti|join(", ") }}</p>{% endif %}
+      <p class="k">Fonte: <a href="{{ c.fonte.url_documento }}" rel="noreferrer">{{ c.fonte.titolo }}</a>. Verificata il {{ c.fonte.data_verifica_fonte }}. Questo confronto non è un'attestazione di congruità e non incide automaticamente sul punteggio generale.</p></div>
+    {% endif %}
+  </div>
+  <div class="card"><h2>Pratiche</h2>
+    {% if pratiche_azienda %}<ul>{% for p in pratiche_azienda %}<li><a href="/pratiche/{{ p.id }}">{{ p.id }}</a> — {{ p.stato|replace("_"," ") }} — {{ p.finalita }}</li>{% endfor %}</ul>
+    {% else %}<p class="k">Nessuna pratica aperta per questa azienda.</p>{% endif %}
+    {% if puo.pratiche_gestisci %}
+    <details class="subcard"><summary>Apri una pratica di approfondimento</summary>
+      <form method="post" action="/pratiche/crea">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="azienda_id" value="{{ az.id }}">
+        <label for="finalita">Finalità dichiarata (10–500 caratteri)</label><textarea id="finalita" name="finalita" required minlength="10" maxlength="500" rows="2"></textarea>
+        <label for="ambito">Ambito della verifica (5–500 caratteri)</label><textarea id="ambito" name="ambito" required minlength="5" maxlength="500" rows="2"></textarea>
+        <button type="submit">Apri pratica</button>
+        <p class="k">La pratica registra il lavoro umano: non avvia ispezioni, sanzioni o comunicazioni.</p>
+      </form></details>
+    {% endif %}
+  </div>
+  <div class="card"><h2>Storico delle analisi</h2>
+    {% if storico %}<div class="table-scroll"><table><tr><th scope="col">Esecuzione</th><th scope="col">Data</th><th scope="col">Indice</th><th scope="col">Esito</th><th scope="col">Motore</th></tr>
+    {% for h in storico %}<tr><td>{{ h.id }}</td><td>{{ h.eseguita_il }}</td><td>{{ h.punteggio if h.punteggio is not none else "N/D" }}</td><td>{{ h.livello|replace("_"," ") }}</td><td>{{ h.versione_motore }}</td></tr>{% endfor %}</table></div>
+    {% else %}<p class="k">Nessuna esecuzione registrata per questa azienda: il lotto viene registrato al primo uso operativo (pratica, relazione, import o ricalcolo).</p>{% endif %}
+  </div>
+  <div class="card"><h2>Dati utilizzati</h2><div class="table-scroll"><table>{% for k, v in az.items() %}{% if k not in ["analisi","_irregolare"] %}<tr><th>{{ k }}</th><td>{{ v if v is not none else "Non disponibile" }}</td></tr>{% endif %}{% endfor %}</table></div></div>
+{% endif %}
+{% endblock %}

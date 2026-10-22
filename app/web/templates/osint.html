@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block titolo %}OSINT · Emersione{% endblock %}
+{% block contenuto %}
+<h2>Raccolta OSINT</h2>
+<p class="k">Acquisizione di pagine pubbliche su domini autorizzati: singola pagina oppure raccolta limitata sullo stesso sito (massimo 20 pagine, profondità 2, rispetto di robots.txt, una richiesta al secondo). Nessuna conclusione automatica: tutte le osservazioni restano da verificare. <a href="/osint/verifica">Verifica incrociata tra fonti</a>.</p>
+{% if esito %}<p class="notice" role="status">{{ esito }}</p>{% endif %}
+<div class="card">
+  <h3>Domini autorizzati dal deployment</h3>
+  {% if domini %}<p>{{ domini|join(", ") }}</p>{% else %}<p class="error">Nessun dominio è in allowlist. Prima di acquisire pagine, verificare le fonti e configurare <code>EMERSIONE_OSINT_ALLOWED_DOMAINS</code> nell'ambiente server.</p>{% endif %}
+  {% if puo.osint_acquisisci %}
+  <form method="post" action="/osint/acquisisci">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label for="url">URL pubblico HTTPS da acquisire</label><input id="url" name="url" type="url" maxlength="2000" required placeholder="https://dominio-autorizzato.example/pagina">
+    <label for="motivazione">Motivazione della raccolta</label><textarea id="motivazione" name="motivazione" minlength="15" maxlength="1000" rows="3" required placeholder="Descrivere la finalità e la pertinenza della pagina rispetto al controllo"></textarea>
+    <button type="submit" {% if not domini %}disabled{% endif %}>Acquisisci singola pagina</button>
+  </form>
+  <details class="subcard"><summary>Raccolta su più pagine dello stesso sito</summary>
+  <form method="post" action="/osint/raccolta">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label for="url_r">URL di partenza (dominio autorizzato)</label><input id="url_r" name="url" type="url" maxlength="2000" required>
+    <label for="mot_r">Motivazione della raccolta</label><textarea id="mot_r" name="motivazione" minlength="15" maxlength="1000" rows="2" required></textarea>
+    <label for="maxp">Numero massimo di pagine (1–20)</label><input id="maxp" name="max_pagine" type="number" min="1" max="20" value="5">
+    <label for="prof">Profondità dei collegamenti (0–2)</label><input id="prof" name="profondita" type="number" min="0" max="2" value="1">
+    <button type="submit" {% if not domini %}disabled{% endif %}>Avvia raccolta limitata</button>
+  </form></details>
+  {% endif %}
+</div>
+<div class="card">
+<h3>Osservazioni registrate</h3>
+<div class="table-scroll"><table><thead><tr><th>Acquisizione / fonte</th><th>Estratto testuale</th><th>SHA-256</th><th>Stato</th><th>Revisione</th></tr></thead><tbody>
+{% for o in osservazioni %}
+<tr><td><b>{{ o.titolo or o.host }}</b><br><a href="{{ o.url }}" rel="noreferrer">{{ o.url }}</a><br><span class="k">{{ o.acquisito_il }} · {{ o.acquisito_da }}</span><br><span class="k">Motivazione: {{ o.motivazione }}</span></td><td>{{ o.estratto[:1200] }}{% if o.estratto|length > 1200 %}…{% endif %}</td><td><code>{{ o.sha256 }}</code></td><td>{{ o.stato }}</td><td>
+{% if puo.osint_revisiona %}
+<form method="post" action="/osint/revisiona">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="id" value="{{ o.id }}">
+<label for="stato-{{ o.id }}">Esito della revisione</label><select id="stato-{{ o.id }}" name="stato"><option value="da_verificare">Da verificare</option><option value="confermato_documentale">Riscontro documentale confermato</option><option value="non_pertinente">Non pertinente</option><option value="contestato">Contestato</option></select>
+<label for="nota-{{ o.id }}">Nota del revisore</label><textarea id="nota-{{ o.id }}" name="nota" rows="2" minlength="10" maxlength="1000" required></textarea><button type="submit">Registra revisione</button>
+</form>
+{% endif %}</td></tr>
+{% endfor %}
+</tbody></table></div>
+{% if not osservazioni %}<p class="k">Nessuna osservazione OSINT registrata.</p>{% endif %}
+</div>
+{% endblock %}

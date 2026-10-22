@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block titolo %}Documenti e relazioni · Emersione{% endblock %}
+{% block contenuto %}
+<div class="card">
+  <h2>Registro documentale</h2>
+  <p class="k">I file caricati vengono conservati in un'area non pubblica e collegati ai settori o parametri selezionati. Ogni documento nuovo rimane in stato <b>da verificare</b>. Non vengono eseguiti automaticamente estrazione, interpretazione o aggiornamento dei coefficienti.</p>
+  {% if esito %}<p class="notice" role="status">{{ esito }}</p>{% endif %}
+  <form method="post" action="/documenti/carica" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label for="file">Documento di riferimento (PDF, TXT, CSV o JSON; massimo 10 MiB)</label><input id="file" name="file" type="file" accept=".pdf,.txt,.csv,.json" required>
+    <label for="titolo">Titolo</label><input id="titolo" name="titolo" maxlength="180" required>
+    <label for="descrizione">Descrizione e parte pertinente</label><textarea id="descrizione" name="descrizione" maxlength="1000" rows="3"></textarea>
+    <label for="settore">Settore associato (facoltativo)</label><select id="settore" name="settore"><option value="">Nessuno</option>{% for s in settori %}<option value="{{ s.id }}">{{ s.nome }}</option>{% endfor %}</select>
+    <label for="parametro">Parametro associato (facoltativo)</label><select id="parametro" name="parametro"><option value="">Nessuno</option>{% for p in parametri %}<option value="{{ p.id }}">{{ p.nome }} — {{ p.ambito }}</option>{% endfor %}</select>
+    <label for="url_fonte">URL originale della fonte (facoltativo)</label><input id="url_fonte" name="url_fonte" type="url" maxlength="1000" placeholder="https://...">
+    <button type="submit">Registra documento e relazione</button>
+  </form>
+</div>
+<div class="card">
+  <h2>Documenti registrati</h2>
+  <div class="table-scroll"><table><thead><tr><th>Titolo</th><th>Relazioni</th><th>Fonte</th><th>Stato</th><th>Dimensione</th><th>Hash SHA-256</th><th>File</th></tr></thead><tbody>
+  {% for d in documenti %}
+    <tr><td>{{ d.titolo }}<br><span class="k">{{ d.descrizione }}</span><br><span class="k">Acquisito: {{ d.acquisito_il }} · da {{ d.creato_da }}</span></td>
+    <td>{{ d.settore or "Nessun settore" }}<br>{{ d.parametro or "Nessun parametro" }}</td>
+    <td>{% if d.url_fonte %}<a href="{{ d.url_fonte }}" rel="noreferrer">Fonte originale</a>{% else %}N/D{% endif %}</td>
+    <td>{{ d.stato }}<br><span class="k">Estrazione: {{ d.estrazione }}</span>
+      {% if d.estrazione_dati and d.estrazione_dati.candidati %}<details class="subcard"><summary>{{ d.estrazione_dati.candidati|length }} candidati da verificare</summary>
+      <p class="k">{{ d.estrazione_dati.nota }}</p><ul>{% for c in d.estrazione_dati.candidati[:12] %}<li><b>{{ c.tipo }}</b>: {{ c.valore_testuale }} {{ c.unita_testuale or "" }}{% if c.pagina %} · pag. {{ c.pagina }}{% endif %}<br><span class="k">{{ c.estratto }}</span></li>{% endfor %}</ul>
+      {% if d.estrazione_dati.candidati|length > 12 %}<p class="k">Sono mostrati i primi 12 candidati; l'archivio conserva fino a 120 candidati.</p>{% endif %}</details>{% else %}<span class="k">{{ d.estrazione_dati.nota if d.estrazione_dati else "Estrazione non disponibile" }}</span>{% endif %}</td><td>{{ d.dimensione_byte }} byte</td><td><code>{{ d.sha256 }}</code></td>
+    <td>{% if d.file_key %}<a href="/documenti/{{ d.id }}/download">Scarica</a>{% else %}Riferimento esterno soltanto{% endif %}</td></tr>
+  {% endfor %}
+  </tbody></table></div>
+  {% if not documenti %}<p class="k">Nessun documento registrato.</p>{% endif %}
+</div>
+<div class="card">
+  <h2>Relazioni documentali e metodologiche</h2>
+  <p class="k">Collega settori, parametri e documenti con una relazione esplicita e una motivazione. Le relazioni sono registrate in stato <b>da verificare</b>; non modificano automaticamente formule, coefficienti o valutazioni delle aziende.</p>
+  <form method="post" action="/relazioni/crea">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label for="rel_sorgente">Elemento di origine</label>
+    <select id="rel_sorgente" name="sorgente" required><option value="">Seleziona un elemento</option>{% for n in nodi_relazione %}<option value="{{ n.value }}">{{ n.label }}</option>{% endfor %}</select>
+    <label for="rel_tipo">Tipo di relazione</label>
+    <select id="rel_tipo" name="tipo" required>{% for valore, etichetta in tipi_relazione %}<option value="{{ valore }}">{{ etichetta }}</option>{% endfor %}</select>
+    <label for="rel_destinazione">Elemento collegato</label>
+    <select id="rel_destinazione" name="destinazione" required><option value="">Seleziona un elemento</option>{% for n in nodi_relazione %}<option value="{{ n.value }}">{{ n.label }}</option>{% endfor %}</select>
+    <label for="rel_descrizione">Motivazione e riferimento specifico (facoltativi)</label>
+    <textarea id="rel_descrizione" name="descrizione" maxlength="1000" rows="3"></textarea>
+    <button type="submit">Registra relazione da verificare</button>
+  </form>
+  <h3>Relazioni registrate</h3>
+  <div class="table-scroll"><table><thead><tr><th>Origine</th><th>Relazione</th><th>Destinazione</th><th>Nota</th><th>Stato</th><th>Creato da</th></tr></thead><tbody>
+  {% for r in relazioni %}<tr><td>{{ r.sorgente_label }}</td><td>{{ r.tipo }}</td><td>{{ r.destinazione_label }}</td><td>{{ r.descrizione or "Nessuna nota" }}</td><td>{{ r.stato }}</td><td>{{ r.creato_da }}<br>{{ r.creato_il }}</td></tr>{% endfor %}
+  </tbody></table></div>
+  {% if not relazioni %}<p class="k">Nessuna relazione registrata.</p>{% endif %}
+</div>
+{% endblock %}

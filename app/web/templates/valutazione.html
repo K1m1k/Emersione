@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block titolo %}Valutazione · Emersione{% endblock %}
+{% block contenuto %}
+<h2>Valutazione del motore</h2>
+<p class="k">Origine del lotto attivo: {{ origine }}</p>
+{% if not m.valutabile %}
+<div class="card"><p><b>Metriche non disponibili.</b> {{ m.motivo }}</p>
+<p class="k">L'assenza di metriche non equivale a una valutazione positiva del motore.</p></div>
+{% else %}
+<div class="card"><p class="notice"><b>{{ "Test sintetico" if m.tipo_etichette == "sintetiche" else "Etichette dichiarate" }}.</b> {{ m.avviso }}</p>
+  <div class="table-scroll"><table>
+    <caption class="k">Matrice di confusione (soglia: indice ≥ {{ m.soglia_punteggio }}; {{ m.criterio_soglia }})</caption>
+    <tr><th scope="row">Casi valutati</th><td>{{ m.casi_valutati }} (esclusi: {{ m.esclusi_non_valutabili }} non valutabili, {{ m.esclusi_senza_etichetta }} senza etichetta)</td></tr>
+    <tr><th scope="row">Distribuzione delle classi</th><td>{{ m.classi.irregolari }} irregolari · {{ m.classi.regolari }} regolari</td></tr>
+    <tr><th scope="row">Veri positivi</th><td>{{ m.matrice.veri_positivi }}</td></tr>
+    <tr><th scope="row">Falsi positivi</th><td>{{ m.matrice.falsi_positivi }}</td></tr>
+    <tr><th scope="row">Veri negativi</th><td>{{ m.matrice.veri_negativi }}</td></tr>
+    <tr><th scope="row">Falsi negativi</th><td>{{ m.matrice.falsi_negativi }}</td></tr>
+  </table></div>
+</div>
+<div class="card"><div class="table-scroll"><table>
+  <tr><th scope="col">Metrica</th><th scope="col">Valore</th><th scope="col">Intervallo di confidenza 95% (Wilson)</th><th scope="col">Denominatore</th></tr>
+  {% for nome, r in [("Precisione", m.precisione), ("Richiamo (recall)", m.richiamo), ("Specificità", m.specificita), ("Tasso di falsi positivi", m.tasso_falsi_positivi), ("Tasso di falsi negativi", m.tasso_falsi_negativi)] %}
+  <tr><th scope="row">{{ nome }}</th><td>{{ r.valore if r.valore is not none else "n/d" }}</td><td>{% if r.ic95 %}{{ r.ic95[0] }} – {{ r.ic95[1] }}{% else %}n/d{% endif %}</td><td>{{ r.n }}</td></tr>
+  {% endfor %}
+</table></div></div>
+{% for titolo, righe in gruppi.items() %}
+<div class="card"><h3>Prestazioni per {{ titolo|lower }}</h3>
+  <p class="k">Particolare attenzione ai falsi positivi: un tasso più alto in un gruppo indica che gli indicatori penalizzano quel gruppo. Gruppi con meno di 20 casi: metriche non calcolate.</p>
+  <div class="table-scroll"><table><tr><th scope="col">{{ titolo }}</th><th scope="col">Casi</th><th scope="col">Precisione (IC 95%)</th><th scope="col">Richiamo (IC 95%)</th><th scope="col">Tasso falsi positivi (IC 95%)</th></tr>
+  {% for r in righe %}<tr><th scope="row">{{ r.gruppo }}</th><td>{{ r.casi }}</td>
+    {% if r.sufficiente %}{% for k in ["precisione","richiamo","tasso_falsi_positivi"] %}<td>{{ r[k].valore if r[k].valore is not none else "n/d" }}{% if r[k].ic95 %} ({{ r[k].ic95[0] }}–{{ r[k].ic95[1] }}){% endif %}</td>{% endfor %}
+    {% else %}<td colspan="3" class="k">campione insufficiente</td>{% endif %}</tr>{% endfor %}
+  </table></div></div>
+{% endfor %}
+{% endif %}
+<p class="k">Con coefficienti non verificati e dati sintetici le cifre verificano il funzionamento della catena di calcolo, non l'efficacia reale. Le prestazioni reali richiedono etichette di riferimento indipendenti, ottenute legittimamente, e una sperimentazione rappresentativa (vedi docs/F_PIANO_SPERIMENTAZIONE.md).</p>
+{% endblock %}

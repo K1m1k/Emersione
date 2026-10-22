@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block titolo %}Prestazioni · Emersione{% endblock %}
+{% block contenuto %}
+<div class="card">
+  <h2>Prestazioni del servizio</h2>
+  <p class="k">Dati in memoria dall'ultimo avvio, per processo. Richieste oltre {{ soglia }} secondi sono contate come lente. Per l'esercizio servono monitoraggio esterno e allarmi (docs/G_MANUALE_OPERATIVO.md).</p>
+  <div class="table-scroll"><table><tr><th scope="col">Percorso</th><th scope="col">Richieste</th><th scope="col">Errori 5xx</th><th scope="col">Medio (s)</th><th scope="col">Massimo (s)</th><th scope="col">Lente</th></tr>
+  {% for r in righe %}<tr><td><code>{{ r.percorso }}</code></td><td>{{ r.richieste }}</td><td>{{ r.errori_5xx }}</td><td>{{ "%.3f"|format(r.medio_s) }}</td><td>{{ "%.3f"|format(r.massimo_s) }}</td><td>{{ r.lente }}</td></tr>
+  {% else %}<tr><td colspan="6">Nessuna richiesta registrata.</td></tr>{% endfor %}</table></div>
+</div>
+{% endblock %}

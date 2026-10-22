@@ -1,0 +1,56 @@
+name: Fonte o coefficiente
+description: Proponi una fonte verificabile o un valore per un parametro di settore.
+labels: ["fonte", "coefficienti"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Un valore senza fonte verificabile non può superare la revisione. Indica il documento il più precisamente possibile.
+  - type: input
+    id: settore
+    attributes:
+      label: Settore
+      placeholder: "es. edilizia, agricoltura, ristorazione"
+    validations:
+      required: true
+  - type: input
+    id: parametro
+    attributes:
+      label: Parametro interessato
+      description: Identificativo nel registro, se lo conosci, o descrizione.
+    validations:
+      required: true
+  - type: input
+    id: valore
+    attributes:
+      label: Valore proposto e unità di misura
+      placeholder: "es. 0,42 ore/m3"
+    validations:
+      required: true
+  - type: textarea
+    id: fonte
+    attributes:
+      label: Fonte
+      description: Titolo, ente, data, link; pagina o tabella.
+    validations:
+      required: true
+  - type: textarea
+    id: estratto
+    attributes:
+      label: Estratto testuale
+      description: Il passaggio del documento da cui si ricava il valore.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: ambito
+    attributes:
+      label: Ambito di validità e limiti
+      description: Territorio, periodo, tipo di impresa; condizioni in cui il valore non vale.
+  - type: checkboxes
+    id: dati
+    attributes:
+      label: Riservatezza
+      options:
+        - label: La fonte è pubblica e la proposta non contiene dati personali o riservati.
+          required: true

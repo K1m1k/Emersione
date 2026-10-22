@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block titolo %}Esecuzioni del motore · Emersione{% endblock %}
+{% block contenuto %}
+<div class="card">
+  <h2>Esecuzioni del motore</h2>
+  <p class="k">Ogni esecuzione conserva i risultati per azienda, la versione del motore e l'impronta della configurazione usata: le analisi storiche non vengono ricalcolate quando cambiano parametri o formule.</p>
+  {% if puo.esporta_dati %}<p><a href="/esporta.csv">Esporta il lotto attivo in CSV</a> <span class="k">(protetto dall'iniezione di formule; esportazione registrata)</span></p>{% endif %}
+  {% if esecuzioni %}
+  <div class="table-scroll"><table>
+    <tr><th scope="col">N.</th><th scope="col">Data</th><th scope="col">Utente</th><th scope="col">Motivo</th><th scope="col">Origine</th><th scope="col">Record</th><th scope="col">Esiti</th><th scope="col">Motore · configurazione</th></tr>
+    {% for e in esecuzioni %}<tr>
+      <td>{{ e.id }}{% if e.id == corrente %} <span class="stato-chip">attiva</span>{% endif %}</td><td>{{ e.eseguita_il }}</td><td>{{ e.utente }}</td><td>{{ e.motivo }}</td>
+      <td>{{ e.origine }}{% if e.sintetico %} <span class="k">(sintetico)</span>{% endif %}</td><td>{{ e.numero_record }}</td>
+      <td>{% for l, n in e.riepilogo.livelli.items() %}{{ l|replace("_"," ") }} {{ n }}{% if not loop.last %} · {% endif %}{% endfor %}</td>
+      <td>{{ e.versione_motore }}<br><code>{{ e.hash_configurazione[:16] }}…</code></td></tr>{% endfor %}
+  </table></div>
+  {% else %}<p>Nessuna esecuzione registrata. Il lotto viene registrato al primo uso operativo (import, ricalcolo, pratica o relazione).</p>{% endif %}
+</div>
+{% endblock %}

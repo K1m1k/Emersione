@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "Se usi Emersione in un lavoro di ricerca, citalo con i metadati seguenti."
+type: software
+title: "Emersione: indicatori spiegabili di possibile irregolarità del lavoro"
+abstract: >-
+  Prototipo di ricerca open source per l'analisi di indicatori di possibile
+  irregolarità del lavoro, basato su regole dichiarative, coefficienti con
+  fonte e stato di validazione, collaudo automatico, audit verificabile e
+  relazioni con impronta. Funziona su dati sintetici; coefficienti e
+  metodologia non sono ancora validati.
+authors:
+  - alias: K1m1k
+version: 3.1.0
+date-released: "2026-10-22"
+license: EUPL-1.2
+repository-code: "https://github.com/K1m1k/emersione"
+keywords:
+  - lavoro sommerso
+  - lavoro irregolare
+  - analisi del rischio
+  - spiegabilità
+  - open government
+  - software pubblico

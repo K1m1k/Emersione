@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.env.*
+!.env.example
+dati/*.sqlite3
+dati/*.sqlite3-*
+dati/audit.jsonl
+dati/documenti/
+*.tmp
+.coverage
+htmlcov/
+config/registro_versioni.sqlite3
+config/registro_versioni.sqlite3-*
+*.pre-ripristino-*
+emersione-backup-*.tar.gz

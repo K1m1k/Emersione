@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block titolo %}Accesso · Emersione{% endblock %}
+{% block contenuto %}
+<div class="card narrow">
+  <h2>Accesso alla piattaforma</h2>
+  <p class="k">Accedi con un account configurato dall'amministratore tecnico. Non sono previste credenziali predefinite.</p>
+  {% if errore %}<p class="error" role="alert">{{ errore }}</p>{% endif %}
+  {% if auth_configurata %}
+  <form method="post" action="/login" autocomplete="on">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="hidden" name="next" value="{{ request.query_params.get('next', '/') }}">
+    <label for="username">Nome utente</label>
+    <input id="username" name="username" type="text" autocomplete="username" maxlength="100" required>
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" maxlength="1024" required>
+    <button type="submit">Accedi</button>
+  </form>
+  {% else %}
+  <p>Accesso sospeso: gli account non sono configurati. Consulta il README per la configurazione sicura degli utenti.</p>
+  {% endif %}
+</div>
+{% endblock %}

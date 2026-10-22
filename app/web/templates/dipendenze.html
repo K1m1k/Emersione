@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block titolo %}Dipendenze · Emersione{% endblock %}
+{% block contenuto %}
+<div class="card">
+  <h2>Analisi d'impatto</h2>
+  <form method="get" action="/dipendenze" class="filtri">
+    <input type="hidden" name="tipo" value="parametro">
+    <label for="par">Parametro</label><select id="par" name="id">{% for p in parametri %}<option value="{{ p.id }}">{{ p.nome }} ({{ p.id }})</option>{% endfor %}</select>
+    <button type="submit">Mostra impatto</button>
+  </form>
+  {% if impatto %}
+    {% if impatto.errore %}<p class="error" role="alert">{{ impatto.errore }}</p>
+    {% else %}
+    <h3>{{ impatto.tipo }} <code>{{ impatto.id }}</code></h3>
+    {% if impatto.parametro_globale_del_motore %}<p class="notice">Soglia globale del motore: incide su tutti i settori.</p>{% endif %}
+    {% if impatto.settori is defined %}<p><b>Settori interessati:</b> {% for s in impatto.settori %}{% if s.id is defined %}<a href="/settori/{{ s.id }}/gestione">{{ s.nome }}</a> ({{ s.stato }}){% else %}{{ s }}{% endif %}{% if not loop.last %}, {% endif %}{% else %}nessuno{% endfor %}</p>{% endif %}
+    {% if impatto.documenti is defined %}<p><b>Documenti:</b> {% for d in impatto.documenti %}{{ d.titolo }}{% if not loop.last %}, {% endif %}{% else %}nessuno{% endfor %}</p>{% endif %}
+    <p><b>Esecuzioni storiche che lo hanno usato:</b> {{ (impatto.esecuzioni_storiche or [])|length }}</p>
+    {% if impatto.analisi_future %}<p><b>Analisi future:</b> {{ impatto.analisi_future }}</p>{% endif %}
+    <p><b>Test da rieseguire:</b> {{ (impatto.test_da_rieseguire or [])|join("; ") or "—" }}</p>
+    <p><b>Approvazioni richieste:</b> {{ (impatto.approvazioni_richieste or [])|join(" ") }}</p>
+    {% if impatto.nota_storico %}<p class="k">{{ impatto.nota_storico }}</p>{% endif %}
+    {% endif %}
+  {% endif %}
+</div>
+<div class="card">
+  <h2>Mappa delle dipendenze</h2>
+  {% if mappa.riferimenti_irrisolti %}<p class="error" role="alert">Riferimenti irrisolti: {% for a in mappa.riferimenti_irrisolti %}{{ a.da }} → {{ a.a }}{% if not loop.last %}; {% endif %}{% endfor %}</p>{% else %}<p class="ok">Nessun riferimento irrisolto.</p>{% endif %}
+  <p><b>Parametri non usati da alcun settore:</b> {{ mappa.parametri_non_usati|join(", ") or "nessuno" }}</p>
+  <div class="table-scroll"><table><tr><th scope="col">Da</th><th scope="col">Relazione</th><th scope="col">A</th></tr>
+  {% for a in mappa.archi %}<tr><td><code>{{ a.da }}</code></td><td>{{ a.tipo }}</td><td><code>{{ a.a }}</code></td></tr>{% endfor %}</table></div>
+</div>
+<div class="card">
+  <h2>Versioni del registro</h2>
+  <div class="table-scroll"><table><tr><th scope="col">N.</th><th scope="col">Data</th><th scope="col">Autore</th><th scope="col">Motivo</th><th scope="col">Impronta</th></tr>
+  {% for v in versioni %}<tr><td>{{ v.progressivo }}</td><td>{{ v.registrata_il }}</td><td>{{ v.autore }}</td><td>{{ v.motivo }}</td><td><code>{{ v.hash[:16] }}</code></td></tr>{% else %}<tr><td colspan="5">Nessuna versione registrata.</td></tr>{% endfor %}</table></div>
+</div>
+{% endblock %}

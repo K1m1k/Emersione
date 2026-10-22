@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Domande, idee e proposte di collaborazione
+    url: https://github.com/K1m1k/emersione/discussions
+    about: Per confronti aperti usa la scheda Discussions.
+  - name: Vulnerabilità di sicurezza
+    url: https://github.com/K1m1k/emersione/security/advisories/new
+    about: Segnala le vulnerabilità in privato, non in una issue pubblica.

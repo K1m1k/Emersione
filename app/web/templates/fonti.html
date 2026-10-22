@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block titolo %}Fonti e acquisizioni · Emersione{% endblock %}
+{% block contenuto %}
+<h2>Catalogo e acquisizione di fonti</h2>
+<p class="k">Un connettore funzionante acquisisce il payload grezzo e ne conserva URL, data, formato e SHA-256. L'acquisizione non autorizza il riutilizzo e non collega automaticamente la fonte al punteggio aziendale.</p>
+{% if esito %}<p class="notice" role="status">{{ esito }}</p>{% endif %}
+<h3>Fonti registrate</h3>
+{% for gruppo in [fonti.pubblica, fonti.riservata] %}
+  {% for f in gruppo %}
+    <div class="card"><b>{{ f.nome }}</b> <span class="badge {{ 'basso' if f.operativo else 'non_valutabile' }}">{{ f.stato }}</span>
+      <p class="k">{{ f.nota }}</p><p><b>Nota giuridica:</b> {{ f.base_giuridica }}</p>
+      <p class="k">Campi attesi: {{ f.campi_attesi|join(", ") }}</p>
+    </div>
+  {% endfor %}
+{% endfor %}
+{% if puo.acquisisci_fonti %}
+<div class="card">
+  <h2>Acquisisci dataset ufficiale</h2>
+  <p class="k">Le chiamate sono limitate agli host ufficiali consentiti, HTTPS, 15 secondi e 8 MiB. I redirect vengono rifiutati. Usa solo URL e identificativi verificati nella documentazione della fonte.</p>
+  <form method="post" action="/fonti/acquisisci">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label for="tipo">Tipo fonte</label>
+    <select id="tipo" name="tipo" required>
+      <option value="inail">INAIL Open API — dataset noto</option>
+      <option value="istat">ISTAT — endpoint SDMX scelto</option>
+      <option value="anac">ANAC — URL diretto della risorsa Open Data</option>
+    </select>
+    <label for="dataset_inail">Dataset INAIL (usato solo per INAIL)</label>
+    <select id="dataset_inail" name="dataset_inail">
+      <option value="infortuni_mensili">Infortuni mensili</option>
+      <option value="infortuni_semestrali">Infortuni semestrali</option>
+      <option value="malattie_professionali_mensili_protocollo">Malattie professionali mensili — protocollo</option>
+      <option value="malattie_professionali_semestrali_protocollo">Malattie professionali semestrali — protocollo</option>
+      <option value="malattie_professionali_semestrali_definizione">Malattie professionali semestrali — definizione</option>
+    </select>
+    <label for="url_istat">URL esatto endpoint ISTAT SDMX (usato solo per ISTAT)</label>
+    <input id="url_istat" name="url_istat" type="url" maxlength="2000" placeholder="https://esploradati.istat.it/HVD/rest/v2/...">
+    <label for="url_anac">URL diretto della risorsa ANAC dal catalogo ufficiale (usato solo per ANAC)</label>
+    <input id="url_anac" name="url_anac" type="url" maxlength="2000" placeholder="https://dati.anticorruzione.it/opendata/...">
+    <label for="parametri">Parametri query (facoltativi, uno per riga: chiave=valore; per INAIL o ISTAT)</label>
+    <textarea id="parametri" name="parametri" maxlength="5000" rows="4" placeholder="Regione=Lazio&#10;Anno[Accadimento]=2025"></textarea>
+    <button type="submit">Acquisisci e archivia</button>
+  </form>
+</div>
+{% endif %}
+<div class="card">
+  <h2>Acquisizioni archiviate</h2>
+  <p class="k">I payload sono conservati in archivio separato dal dataset delle aziende. Prima dell'uso analitico occorrono mapping, controlli di schema, licenza e revisione della pertinenza.</p>
+  <div class="table-scroll"><table><thead><tr><th>Data</th><th>Fonte</th><th>HTTP / formato</th><th>Dimensione</th><th>SHA-256</th><th>Nota</th><th>Azioni</th></tr></thead><tbody>
+  {% for a in acquisizioni %}
+    <tr><td>{{ a.acquisito_il }}</td><td>{{ a.chiave }}<br><span class="k">{{ a.url }}</span></td><td>{{ a.status_http }} · {{ a.formato }}<br><span class="k">{{ a.content_type }}</span></td><td>{{ a.dimensione_byte }} byte</td><td><code>{{ a.sha256 }}</code></td><td>{{ a.nota }}</td><td><a href="/fonti/{{ a.id }}/scarica">Scarica</a><br><a href="/fonti/{{ a.id }}/mappatura">Anteprima / mapping</a></td></tr>
+  {% endfor %}
+  </tbody></table></div>
+  {% if not acquisizioni %}<p class="k">Nessuna acquisizione registrata.</p>{% endif %}
+</div>
+
+<div class="card">
+  <h2>Mapping e osservazioni di riferimento</h2>
+  <p class="k">I mapping convertono i record acquisiti in osservazioni con valore, unità e dimensioni selezionate. Le osservazioni restano in un archivio separato e non entrano automaticamente nel punteggio.</p>
+  {% if mappature %}<div class="table-scroll"><table><thead><tr><th>Data</th><th>Fonte</th><th>Settore/parametro</th><th>Righe</th><th>Stato</th><th>Dettaglio</th></tr></thead><tbody>
+  {% for m in mappature %}<tr><td>{{ m.creato_il }}</td><td>{{ m.chiave_fonte }}<br><code>{{ m.acquisizione_id }}</code></td><td>{{ m.settore_id }} / {{ m.parametro_id }}</td><td>{{ m.numero_righe }}</td><td>{{ m.stato }}</td><td><a href="/fonti/mappature/{{ m.id }}">Apri osservazioni</a></td></tr>{% endfor %}
+  </tbody></table></div>{% else %}<p class="k">Nessun mapping configurato. Seleziona “Anteprima / mapping” su un'acquisizione compatibile.</p>{% endif %}
+</div>
+{% endblock %}

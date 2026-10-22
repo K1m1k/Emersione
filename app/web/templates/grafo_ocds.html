@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block titolo %}Suggerimenti OCDS · Emersione{% endblock %}
+{% block contenuto %}
+<p><a href="/grafo">&larr; Grafo aziende</a></p>
+<div class="card">
+  <h2>Candidati da dati OCDS</h2>
+  <p class="k">Fonte: <code>{{ meta.url }}</code>. Collegamento solo per identificativo esatto, mai per nome. Una co-aggiudicazione non implica irregolarità: verificare il documento di gara e registrare la relazione dalla pagina del grafo.</p>
+  {% if errore %}<p class="error" role="alert">{{ errore }}</p>{% endif %}
+  <div class="table-scroll"><table><tr><th scope="col">Azienda A</th><th scope="col">Azienda B</th><th scope="col">Procedura (ocid)</th><th scope="col">Aggiudicazione</th><th scope="col">Stato</th></tr>
+  {% for s in suggerimenti %}<tr><td>{{ s.origine_id }}</td><td>{{ s.destinazione_id }}</td><td><code>{{ s.ocid }}</code></td><td><code>{{ s.award_id }}</code></td><td>{{ s.stato|replace("_"," ") }}</td></tr>
+  {% else %}<tr><td colspan="5">Nessun candidato: nessuna coppia di aziende del lotto risulta nella stessa aggiudicazione.</td></tr>{% endfor %}</table></div>
+</div>
+{% endblock %}

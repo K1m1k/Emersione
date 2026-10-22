@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block titolo %}Catalogo dataset · Emersione{% endblock %}
+{% block contenuto %}
+{% if esito %}<p class="notice" role="status">{{ esito }}</p>{% endif %}
+<div class="card">
+  <h2>Stato dei connettori di scoperta</h2>
+  <div class="table-scroll"><table><tr><th scope="col">Fonte</th><th scope="col">Stato</th><th scope="col">Endpoint</th><th scope="col">Nota</th></tr>
+  {% for c in connettori %}<tr><td>{{ c.fonte }}</td><td><span class="stato-chip">{{ c.stato|replace("_"," ") }}</span></td><td><code>{{ c.endpoint }}</code></td><td>{{ c.nota }}</td></tr>{% endfor %}</table></div>
+  {% if puo.acquisisci_fonti %}
+  <form method="post" action="/fonti/catalogo/scopri" class="filtri"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="fonte" value="istat"><button type="submit">Aggiorna elenco dataflow ISTAT</button></form>
+  <form method="post" action="/fonti/catalogo/scopri" class="filtri"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="fonte" value="anac">
+    <label for="qa">Termine di ricerca ANAC</label><input id="qa" name="q" maxlength="100"><button type="submit">Cerca nel catalogo ANAC</button></form>
+  {% endif %}
+</div>
+<div class="card">
+  <h2>Catalogo locale</h2>
+  <form method="get" action="/fonti/catalogo" class="filtri">
+    <label for="q">Cerca</label><input id="q" name="q" value="{{ q }}" maxlength="100">
+    <label for="fonte">Fonte</label><select id="fonte" name="fonte"><option value="">tutte</option><option value="istat" {% if fonte == "istat" %}selected{% endif %}>ISTAT</option><option value="anac" {% if fonte == "anac" %}selected{% endif %}>ANAC</option></select>
+    <button type="submit">Cerca</button>
+  </form>
+  {% if suggerimenti %}<p class="notice">Parametri lessicalmente simili ai termini cercati (suggerimento non verificato): {% for s in suggerimenti %}<code>{{ s.parametro_id }}</code> ({{ s.corrispondenze|join(", ") }}){% if not loop.last %}; {% endif %}{% endfor %}</p>{% endif %}
+  <div class="table-scroll"><table><tr><th scope="col">Fonte</th><th scope="col">Identificativo</th><th scope="col">Nome</th><th scope="col">URL dati</th><th scope="col">Licenza</th><th scope="col">Scoperto</th></tr>
+  {% for v in voci %}<tr><td>{{ v.fonte }}</td><td><code>{{ v.identificativo }}</code></td><td>{{ v.nome }}</td><td>{% if v.url_dati %}<code>{{ v.url_dati }}</code>{% else %}—{% endif %}</td><td>{{ v.licenza }}</td><td>{{ v.scoperto_il }}</td></tr>
+  {% else %}<tr><td colspan="6">Nessuna voce nel catalogo locale.</td></tr>{% endfor %}</table></div>
+  <p class="k">La scoperta registra solo metadati. Per usare un dataset: acquisirlo dalla pagina Fonti, mapparlo, farlo revisionare, poi proporre un valore per un parametro (sotto).</p>
+</div>
+<div class="card">
+  <h2>Proposte di collegamento ai parametri</h2>
+  {% if puo.proponi_collegamenti %}
+  <details class="subcard"><summary>Nuova proposta da una mappatura verificata</summary>
+  <form method="post" action="/fonti/proposte/crea">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label for="mapping_id">Mappatura (solo quelle in stato "mapping verificato" sono accettate)</label>
+    <select id="mapping_id" name="mapping_id">{% for m in mappature %}<option value="{{ m.id }}">{{ m.chiave_fonte }} → {{ m.parametro_id }} [{{ m.stato }}]</option>{% endfor %}</select>
+    <label for="parametro_id">Parametro (deve coincidere con quello della mappatura)</label><input id="parametro_id" name="parametro_id" maxlength="64" required>
+    <label for="statistica">Statistica</label><select id="statistica" name="statistica"><option value="valore_unico">valore unico</option><option value="mediana">mediana</option><option value="media">media</option></select>
+    <label for="periodo">Filtro periodo (facoltativo)</label><input id="periodo" name="periodo" maxlength="100">
+    <label for="territorio">Filtro territorio (facoltativo)</label><input id="territorio" name="territorio" maxlength="100">
+    <label for="categoria">Filtro categoria (facoltativo)</label><input id="categoria" name="categoria" maxlength="100">
+    <button type="submit">Registra proposta</button>
+  </form></details>
+  {% endif %}
+  <div class="table-scroll"><table><tr><th scope="col">Proposta</th><th scope="col">Parametro</th><th scope="col">Valore</th><th scope="col">Unità oss. / parametro</th><th scope="col">Osservazioni</th><th scope="col">Stato</th><th scope="col">Decisione</th></tr>
+  {% for p in proposte %}<tr><td>{{ p.id }}<br><span class="k">{{ p.creata_da }}</span></td><td><code>{{ p.parametro_id }}</code></td><td>{{ p.valore_proposto }}</td>
+    <td>{{ p.unita_osservazioni }} / {{ p.unita_parametro }}{% if not p.unita_compatibili %} <span class="ko">(da riconciliare)</span>{% endif %}</td><td>{{ p.numero_osservazioni }} ({{ p.statistica }})</td>
+    <td>{{ p.stato }}</td><td>{% if p.stato == "proposta" and puo.decidi_collegamenti %}
+      <form method="post" action="/fonti/proposte/decidi"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="proposta_id" value="{{ p.id }}">
+        <label for="n_{{ p.id }}">Nota (min. 20 caratteri)</label><textarea id="n_{{ p.id }}" name="nota" rows="2" maxlength="1000" required></textarea>
+        <label for="d_{{ p.id }}">Decisione</label><select id="d_{{ p.id }}" name="decisione"><option value="respinta">respingi</option><option value="applicata">applica (nuova versione da verificare)</option></select>
+        <button type="submit">Decidi</button></form>
+    {% else %}{{ p.decisa_da or "—" }} {{ p.nota_decisione or "" }}{% endif %}</td></tr>
+  {% else %}<tr><td colspan="7">Nessuna proposta.</td></tr>{% endfor %}</table></div>
+</div>
+{% endblock %}

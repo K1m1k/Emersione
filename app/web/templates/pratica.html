@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block titolo %}Pratica {{ pratica.id }} · Emersione{% endblock %}
+{% block contenuto %}
+<p><a href="/pratiche">&larr; Pratiche</a></p>
+<div class="card">
+  <h2>Pratica {{ pratica.id }}</h2>
+  <p><b>Azienda:</b> <a href="/azienda/{{ pratica.azienda_id }}">{{ pratica.azienda_id }}</a> · <b>Stato:</b> <span class="stato-chip">{{ pratica.stato|replace("_"," ") }}</span> — {{ pratica.descrizione_stato }}</p>
+  <p><b>Finalità dichiarata:</b> {{ pratica.finalita }}</p>
+  <p><b>Ambito:</b> {{ pratica.ambito }}</p>
+  <p class="k">Aperta il {{ pratica.creata_il }} da {{ pratica.creata_da }} sull'esecuzione n. {{ pratica.esecuzione_id or "—" }}.</p>
+  {% if puo.genera_report %}<p><a href="/azienda/{{ pratica.azienda_id }}/report.pdf?pratica={{ pratica.id }}">Genera relazione PDF per questa pratica</a></p>{% endif %}
+</div>
+{% if analisi_storica %}
+<div class="card">
+  <h2>Analisi alla data della pratica (esecuzione n. {{ pratica.esecuzione_id }})</h2>
+  <p><b>Indice:</b> {{ analisi_storica.punteggio if analisi_storica.punteggio is not none else "N/D" }} · <b>Esito:</b> {{ analisi_storica.livello|replace("_"," ") }} · <b>Stato metodologico:</b> {{ analisi_storica.stato_metodologico }}
+  {% if analisi_storica.robustezza %} · <b>Robustezza:</b> {{ analisi_storica.robustezza.stato }}{% endif %}</p>
+  {% for s in analisi_storica.segnali %}<div class="segnale {{ s.gravita }}"><b>{{ s.tipo }}</b> — {{ s.gravita }}<p>{{ s.testo }}</p></div>{% endfor %}
+  <p class="k">Questa è la fotografia conservata al momento dell'esecuzione; eventuali modifiche successive alla configurazione non la alterano.</p>
+</div>
+{% endif %}
+<div class="card">
+  <h2>Cronologia</h2>
+  <div class="table-scroll"><table><tr><th scope="col">Data</th><th scope="col">Utente</th><th scope="col">Tipo</th><th scope="col">Nota</th></tr>
+  {% for e in pratica.eventi %}<tr><td>{{ e.quando }}</td><td>{{ e.utente }}</td><td>{{ e.tipo }}</td><td>{{ e.nota }}</td></tr>{% endfor %}</table></div>
+  {% if puo.pratiche_gestisci %}
+  <form method="post" action="/pratiche/{{ pratica.id }}/evento">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label for="nota">Nota (almeno 5 caratteri)</label><textarea id="nota" name="nota" rows="3" maxlength="2000" required></textarea>
+    <label for="nuovo_stato">Cambia stato (facoltativo)</label>
+    <select id="nuovo_stato" name="nuovo_stato"><option value="">— nessun cambio —</option>{% for t in pratica.transizioni %}<option value="{{ t }}">{{ t|replace("_"," ") }} — {{ stati[t] }}</option>{% endfor %}</select>
+    <button type="submit">Registra</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}
