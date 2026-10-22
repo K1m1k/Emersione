@@ -1,5 +1,13 @@
 # Emersione 3.1 — registro delle modifiche
 
+## Pubblicazione su GitHub (22 ottobre 2026)
+- Licenze: EUPL-1.2 per il codice, CC BY 4.0 per la documentazione.
+- Aggiunti `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, `CITATION.cff`, `publiccode.yml`, modelli di issue e pull request.
+- Integrazione continua: test con le versioni bloccate e controllo delle vulnerabilità (`pip-audit`) a ogni modifica.
+- Sicurezza delle dipendenze: starlette da 0.50.0 a **1.7.0** (10 vulnerabilità note corrette), pypdf da 6.21.0 a **6.21.1** (1 vulnerabilità nota corretta). Suite completa superata con le nuove versioni.
+- Chiusa la verifica aperta sull'installazione pulita con le versioni bloccate (vedi `docs/VERIFICHE.md`).
+- Documentazione sull'intelligenza artificiale riorganizzata in `docs/J_INTELLIGENZA_ARTIFICIALE.md`, `docs/K_ROADMAP_IA.md`, `docs/L_PROSPETTIVE_E_COLLABORAZIONI.md`.
+
 ## Estensibilità (sezione 30)
 - Ciclo di vita dei settori: bozza, in revisione, verificata tecnicamente, validazione metodologica, verifica normativa, approvata per la sperimentazione, approvata, sospesa, archiviata. Un nuovo settore nasce in bozza e non produce risultati operativi.
 - Collaudo automatico isolato: struttura, formula, riferimenti, unità di misura, casi normali/limite/incompleti/errati, riproducibilità, tracciabilità, non interferenza.

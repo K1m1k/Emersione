@@ -23,8 +23,8 @@ Questo inventario distingue ciò che è implementato nel codice da ciò che rich
 | Audit | JSON Lines con catena hash locale | Non impedisce da solo manomissione o cancellazione della coda; manca ancoraggio indipendente e raccolta centralizzata |
 | Database di produzione | Non implementato | Persistenza locale SQLite; mancano architettura multiistanza, retention formalizzata e disaster recovery collaudato |
 | Test automatizzati | 46 test superati nell'ambiente disponibile | I test di rete sono simulati; le prestazioni reali e gli endpoint live non sono validati |
-| Dipendenza pypdf 6.21.0 | Pin aggiornato, verifica pendente | Il container di test non aveva rete e ha eseguito i test con pypdf 5.9.0; reinstallare i requisiti in venv pulito e ripetere i test |
-| Aggiornamento Starlette | Revisione pendente prima della produzione | Il pin resta 0.50.0, versione realmente presente nel collaudo; non è stata eseguita una migrazione alle versioni 1.x perché richiede una verifica separata della compatibilità e della matrice Python |
+| Dipendenza pypdf | Versione 6.21.1, verificata | Installazione pulita e suite completa superate nell'integrazione continua su GitHub; nessuna vulnerabilità nota (`pip-audit`) |
+| Aggiornamento Starlette | Migrato a 1.7.0, verificato | La 0.50.0 aveva 10 vulnerabilità note; con la 1.7.0 la suite completa passa nell'integrazione continua su GitHub |
 | Sicurezza indipendente | Non eseguita | Richiede threat modeling, test di penetrazione e revisione esterna |
 | Validazione scientifica su dati reali | Non eseguita | Richiede etichette di riferimento lecite, campione rappresentativo e misure di falsi positivi/falsi negativi |
 | Valutazioni privacy/AI Act | Non eseguite | Da svolgere con l'ente titolare, DPO e consulenti competenti sulla funzione effettiva |

@@ -3,25 +3,32 @@
 ## Ambiente di collaudo (22 ottobre 2026)
 Linux, Python 3.13.16. Rete esterna non disponibile per pip né per le fonti: nessun pacchetto installato o aggiornato, nessun endpoint interrogato dal vivo.
 
-| Pacchetto | Vincolo in `requirements.txt` | Versione usata nei test |
+| Pacchetto | Vincolo in `requirements.txt` | Versione usata nei test locali |
 |---|---|---|
-| starlette | 0.50.0 | **1.7.0** |
+| starlette | 1.7.0 | 1.7.0 |
 | uvicorn | 0.53.0 | **0.54.0** |
 | jinja2 | 3.1.6 | 3.1.6 |
 | python-multipart | 0.0.32 | 0.0.32 |
 | itsdangerous | 2.2.0 | 2.2.0 |
 | reportlab | 4.4.9 | **5.0.1** |
-| pypdf | 6.21.0 | **5.9.0** |
+| pypdf | 6.21.1 | **5.9.0** |
 | httpx (sviluppo) | 0.28.1 | non installato; il client di test ha usato il pacchetto `httpx2` presente |
 
-**Conseguenza:** i test passano con le versioni indicate in grassetto, **non** con quelle bloccate. Prima di qualsiasi pilota, in un ambiente pulito:
+## Integrazione continua su GitHub (22 ottobre 2026)
+Il workflow `.github/workflows/test.yml` installa in un ambiente pulito (Ubuntu, Python 3.13) **esattamente le versioni bloccate** e a ogni modifica esegue:
 ```bash
-python3 -m venv .venv && . .venv/bin/activate
 pip install -r requirements.txt -r requirements-dev.txt
-python -m compileall -q app config tests
-python -m unittest discover -s tests
+python -m unittest discover -s tests -v
 pip-audit -r requirements.txt
 ```
+| Verifica | Esito |
+|---|---|
+| Suite completa con le versioni bloccate | **superata** |
+| `pip-audit` con starlette 0.50.0 e pypdf 6.21.0 | 11 vulnerabilità note (10 starlette, 1 pypdf) |
+| Aggiornamento a starlette 1.7.0 e pypdf 6.21.1 | **superato**: test verdi, nessuna vulnerabilità nota |
+
+L'esito di ogni esecuzione è pubblico nella scheda *Actions* del repository.
+
 Se un test fallisce con le versioni bloccate, la correzione va fatta e documentata prima dell'uso.
 
 ## Verifiche eseguite
